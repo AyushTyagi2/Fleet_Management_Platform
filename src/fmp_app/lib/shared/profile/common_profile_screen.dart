@@ -64,9 +64,7 @@ class CommonProfileScreen extends StatelessWidget {
                       _buildAppInfoCard(accent),
                       const SizedBox(height: 16),
 
-                      // ── Logout ──
-                      _LogoutButton(accent: accent),
-                      const SizedBox(height: 16), // minimal bottom padding, no empty void
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
@@ -251,7 +249,7 @@ class _UnifiedStatItem extends StatelessWidget {
           children: [
             Icon(icon, size: 18, color: color),
             const SizedBox(width: 4),
-            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
           ],
         ),
         const SizedBox(height: 2),
@@ -394,55 +392,3 @@ class _ProfileHero extends StatelessWidget {
   }
 }
 
-class _LogoutButton extends StatelessWidget {
-  final Color accent;
-  final bool isDesktop; // Re-added temporarily to allow Hot Reload to succeed
-  const _LogoutButton({required this.accent, this.isDesktop = false});
-
-  Future<void> _logout(BuildContext context) async {
-    final confirm = await showDialog<bool>(context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
-        title: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary)),
-        content: const Text('Are you sure you want to sign out?',
-            style: TextStyle(color: AppColors.textSecondary)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error,
-                foregroundColor: Colors.white, elevation: 0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.sm))),
-            child: const Text('Sign Out')),
-        ],
-      ),
-    );
-    if (confirm == true && context.mounted) {
-      await AppSession.clear();
-      Navigator.pushNamedAndRemoveUntil(context, '/welcome', (r) => false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 8, bottom: 8),
-        child: SizedBox(
-          width: 160,
-          child: TextButton.icon(
-            onPressed: () => _logout(context),
-            icon: const Icon(Icons.logout_rounded, size: 16, color: AppColors.error),
-            label: const Text('Sign out', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w600, fontSize: 13)),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

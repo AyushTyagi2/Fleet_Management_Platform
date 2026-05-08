@@ -183,11 +183,11 @@ class _SenderBillingScreenState extends State<SenderBillingScreen>
           ),
           child: Row(
             children: [
-              _StatSegment(label: 'Total Due', value: '\$${_balance['totalDue']!.toStringAsFixed(2)}', icon: Icons.account_balance_wallet, color: AppColors.warning),
-              const VerticalDivider(width: 1, indent: 14, endIndent: 14),
-              _StatSegment(label: 'Paid This Month', value: '\$${_balance['paidThisMonth']!.toStringAsFixed(2)}', icon: Icons.check_circle, color: AppColors.success),
-              const VerticalDivider(width: 1, indent: 14, endIndent: 14),
-              _StatSegment(label: 'Pending', value: '\$${_balance['pending']!.toStringAsFixed(2)}', icon: Icons.schedule, color: AppColors.info),
+              _StatSegment(label: 'Total Due', value: '₹${_balance['totalDue']!.toStringAsFixed(2)}', icon: Icons.account_balance_wallet, color: AppColors.warning),
+              const VerticalDivider(width: 1, thickness: 1, indent: 14, endIndent: 14),
+              _StatSegment(label: 'Paid This Month', value: '₹${_balance['paidThisMonth']!.toStringAsFixed(2)}', icon: Icons.check_circle, color: AppColors.success),
+              const VerticalDivider(width: 1, thickness: 1, indent: 14, endIndent: 14),
+              _StatSegment(label: 'Pending', value: '₹${_balance['pending']!.toStringAsFixed(2)}', icon: Icons.schedule, color: AppColors.info),
             ],
           ),
         ),
@@ -210,11 +210,11 @@ class _SenderBillingScreenState extends State<SenderBillingScreen>
           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4, offset: const Offset(0, 2))]),
           child: Row(
             children: [
-              Expanded(child: _CountSegment(label: 'Total', value: total.toString())),
-              const VerticalDivider(width: 1, indent: 10, endIndent: 10),
-              Expanded(child: _CountSegment(label: 'Paid', value: paid.toString())),
-              const VerticalDivider(width: 1, indent: 10, endIndent: 10),
-              Expanded(child: _CountSegment(label: 'Pending', value: pending.toString())),
+                Expanded(child: _CountSegment(label: 'Total', value: total.toString())),
+                const VerticalDivider(width: 1, thickness: 1, indent: 10, endIndent: 10),
+                Expanded(child: _CountSegment(label: 'Paid', value: paid.toString())),
+                const VerticalDivider(width: 1, thickness: 1, indent: 10, endIndent: 10),
+                Expanded(child: _CountSegment(label: 'Pending', value: pending.toString())),
             ],
           ),
         ),
@@ -332,7 +332,7 @@ class _SenderBillingScreenState extends State<SenderBillingScreen>
                 ],
               ),
               const SizedBox(height: 24),
-              _DetailRow(label: 'Amount', value: '\$${invoice['amount'].toStringAsFixed(2)}'),
+              _DetailRow(label: 'Amount', value: '₹${invoice['amount'].toStringAsFixed(2)}'),
               _DetailRow(label: 'Date', value: invoice['date']),
               _DetailRow(label: 'Due Date', value: invoice['dueDate']),
               _DetailRow(label: 'Description', value: invoice['description']),
@@ -374,7 +374,7 @@ class _SenderBillingScreenState extends State<SenderBillingScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _DetailRow(label: 'Amount', value: '\$${payment['amount'].toStringAsFixed(2)}'),
+            _DetailRow(label: 'Amount', value: '₹${payment['amount'].toStringAsFixed(2)}'),
             _DetailRow(label: 'Method', value: payment['method']),
             _DetailRow(label: 'Date', value: payment['date']),
             _DetailRow(label: 'Status', value: payment['status']),
@@ -479,7 +479,7 @@ class _BalanceCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '\$${amount.toStringAsFixed(2)}',
+                  '₹${amount.toStringAsFixed(2)}',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
@@ -648,7 +648,7 @@ class _ActivityCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${invoice['amount'].toStringAsFixed(2)}',
+                  '₹${invoice['amount'].toStringAsFixed(2)}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -784,7 +784,7 @@ class _InvoiceCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${invoice['amount'].toStringAsFixed(2)}',
+                  '₹${invoice['amount'].toStringAsFixed(2)}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -907,7 +907,7 @@ class _PaymentCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${payment['amount'].toStringAsFixed(2)}',
+                  '₹${payment['amount'].toStringAsFixed(2)}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -971,9 +971,30 @@ Widget _StatSegment({required String label, required String value, required Icon
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
         children: [
-          Container(width: 44, height: 44, decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(8)), child: Icon(icon, color: color, size: 20)),
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+            child: Icon(icon, color: color, size: 20),
+          ),
           const SizedBox(width: 12),
-          Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)), const SizedBox(height: 4), Text(label, style: AppTextStyles.bodySm)]),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(label, style: AppTextStyles.bodySm),
+              ],
+            ),
+          ),
         ],
       ),
     ),
@@ -987,7 +1008,7 @@ Widget _CountSegment({required String label, required String value}) {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
         const SizedBox(height: 4),
         Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
       ],
