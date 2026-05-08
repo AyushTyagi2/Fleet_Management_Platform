@@ -43,12 +43,16 @@ builder.Services.AddControllers()
             System.Text.Json.JsonNamingPolicy.CamelCase);
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
+// ── CORS ──────────────────────────────────────────────────────────────────────
 builder.Services.AddCors(options =>
     options.AddPolicy("AllowFlutter", policy =>
-        policy.SetIsOriginAllowed(_ => true)
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials()));
+        policy.WithOrigins(
+            "https://fmp-dep.vercel.app",
+            "http://localhost:5153"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials()));
 
 // ── Dependency Injection ──────────────────────────────────────────────────────
 builder.Services.AddScoped<OtpService>();
@@ -90,6 +94,7 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseCors("AllowFlutter");
 app.UseAuthentication();
 app.UseAuthorization();
+// ── CORS ──────────────────────────────────────────────────────────────────────
 
 
 app.MapControllers();
