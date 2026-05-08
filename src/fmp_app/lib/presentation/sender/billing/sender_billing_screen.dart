@@ -82,146 +82,141 @@ class _SenderBillingScreenState extends State<SenderBillingScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text(
-          'Billing & Payments',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 900),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top row: title + action
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Billing & Payments',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: _showPaymentDialog,
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(0, 40),
+                            backgroundColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          child: const Text('Make Payment', style: TextStyle(fontWeight: FontWeight.w700)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Tab bar wrapped in Material for proper painting
+                    Material(
+                      color: Colors.transparent,
+                      child: TabBar(
+                        controller: _tabController,
+                        labelColor: AppColors.primary,
+                        unselectedLabelColor: AppColors.textSecondary,
+                        indicatorColor: AppColors.primary,
+                        indicatorWeight: 3,
+                        tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height - 220,
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _buildOverviewTab(),
+                          _buildInvoicesTab(),
+                          _buildPaymentsTab(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.textSecondary,
-          indicatorColor: AppColors.primary,
-          indicatorWeight: 3,
-          tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildOverviewTab(),
-          _buildInvoicesTab(),
-          _buildPaymentsTab(),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showPaymentDialog,
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.payment, color: Colors.white),
       ),
     );
   }
 
   Widget _buildOverviewTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildBalanceCards(),
-          const SizedBox(height: 32),
-          _buildQuickStats(),
-          const SizedBox(height: 32),
+          _buildUnifiedFinancialCard(),
+          const SizedBox(height: 20),
+          _buildInvoiceCountsCard(),
+          const SizedBox(height: 20),
           _buildRecentActivity(),
         ],
       ),
     );
   }
-
-  Widget _buildBalanceCards() {
+  Widget _buildUnifiedFinancialCard() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Account Balance',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _BalanceCard(
-                title: 'Total Due',
-                amount: _balance['totalDue']!,
-                color: AppColors.warning,
-                icon: Icons.account_balance_wallet,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _BalanceCard(
-                title: 'Paid This Month',
-                amount: _balance['paidThisMonth']!,
-                color: AppColors.success,
-                icon: Icons.check_circle,
-              ),
-            ),
-          ],
-        ),
+        const Text('Account Balance', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
         const SizedBox(height: 12),
-        _BalanceCard(
-          title: 'Pending Payments',
-          amount: _balance['pending']!,
-          color: AppColors.info,
-          icon: Icons.schedule,
-          isFullWidth: true,
+        Container(
+          height: 88,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 4, offset: const Offset(0, 2))],
+          ),
+          child: Row(
+            children: [
+              _StatSegment(label: 'Total Due', value: '\$${_balance['totalDue']!.toStringAsFixed(2)}', icon: Icons.account_balance_wallet, color: AppColors.warning),
+              const VerticalDivider(width: 1, indent: 14, endIndent: 14),
+              _StatSegment(label: 'Paid This Month', value: '\$${_balance['paidThisMonth']!.toStringAsFixed(2)}', icon: Icons.check_circle, color: AppColors.success),
+              const VerticalDivider(width: 1, indent: 14, endIndent: 14),
+              _StatSegment(label: 'Pending', value: '\$${_balance['pending']!.toStringAsFixed(2)}', icon: Icons.schedule, color: AppColors.info),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildQuickStats() {
+  Widget _buildInvoiceCountsCard() {
+    final total = _invoices.length;
+    final paid = _invoices.where((i) => (i['status'] as String).toLowerCase() == 'paid').length;
+    final pending = _invoices.where((i) => (i['status'] as String).toLowerCase() == 'pending').length;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Quick Stats',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+        const Text('Invoices', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+        const SizedBox(height: 8),
+        Container(
+          height: 72,
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4, offset: const Offset(0, 2))]),
+          child: Row(
+            children: [
+              Expanded(child: _CountSegment(label: 'Total', value: total.toString())),
+              const VerticalDivider(width: 1, indent: 10, endIndent: 10),
+              Expanded(child: _CountSegment(label: 'Paid', value: paid.toString())),
+              const VerticalDivider(width: 1, indent: 10, endIndent: 10),
+              Expanded(child: _CountSegment(label: 'Pending', value: pending.toString())),
+            ],
           ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                value: '24',
-                label: 'Total Invoices',
-                trend: '+12%',
-                trendColor: AppColors.success,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                value: '18',
-                label: 'Paid',
-                trend: '+8%',
-                trendColor: AppColors.success,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                value: '6',
-                label: 'Pending',
-                trend: '-2%',
-                trendColor: AppColors.warning,
-              ),
-            ),
-          ],
         ),
       ],
     );
@@ -969,6 +964,37 @@ class _PaymentCard extends StatelessWidget {
     }
   }
 }
+
+Widget _StatSegment({required String label, required String value, required IconData icon, required Color color}) {
+  return Expanded(
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        children: [
+          Container(width: 44, height: 44, decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(8)), child: Icon(icon, color: color, size: 20)),
+          const SizedBox(width: 12),
+          Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)), const SizedBox(height: 4), Text(label, style: AppTextStyles.bodySm)]),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _CountSegment({required String label, required String value}) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+      ],
+    ),
+  );
+}
+
 
 class _DetailRow extends StatelessWidget {
   final String label;

@@ -71,6 +71,29 @@ class AppSpacing {
   static const double xxl = 48;
 }
 
+/// Responsive layout helpers — single source of truth for breakpoints.
+class AppLayout {
+  AppLayout._();
+
+  /// Below this → mobile (drawer nav). At or above → desktop (rail nav).
+  static const double mobileBreakpoint = 600;
+
+  /// Max content width for auth screens (login, OTP, etc.)
+  static const double authMaxWidth = 480;
+
+  /// Max content width for dashboard pages.
+  static const double dashboardMaxWidth = 1100;
+
+  /// Width of the NavigationRail on desktop.
+  static const double railWidth = 240;
+
+  static bool isMobile(BuildContext context) =>
+      MediaQuery.of(context).size.width < mobileBreakpoint;
+
+  static bool isDesktop(BuildContext context) =>
+      MediaQuery.of(context).size.width >= mobileBreakpoint;
+}
+
 class AppShadows {
   AppShadows._();
 
@@ -305,17 +328,23 @@ class AppTheme {
         ),
       ),
 
-      // Bottom Nav Bar
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      // Navigation Rail (desktop sidebar)
+      navigationRailTheme: const NavigationRailThemeData(
+        backgroundColor: Colors.transparent,
+        selectedIconTheme: IconThemeData(color: AppColors.primary, size: 22),
+        unselectedIconTheme: IconThemeData(color: AppColors.textHint, size: 22),
+        selectedLabelTextStyle: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary),
+        unselectedLabelTextStyle: TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: AppColors.textSecondary),
+        indicatorColor: AppColors.primaryLight,
+      ),
+
+      // Drawer (mobile nav)
+      drawerTheme: DrawerThemeData(
         backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textHint,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        elevation: 0,
-        selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w400),
+        elevation: 2,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.horizontal(right: Radius.circular(20)),
+        ),
       ),
 
       // Snackbar
