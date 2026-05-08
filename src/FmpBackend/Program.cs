@@ -37,6 +37,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddSignalR();
 
 // ── Single AddControllers call with camelCase JSON ────────────────────────────
+builder.Services.AddHttpClient();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
         options.JsonSerializerOptions.PropertyNamingPolicy =

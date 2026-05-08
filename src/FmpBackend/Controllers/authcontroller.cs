@@ -36,18 +36,18 @@ public class AuthController : ControllerBase
     // ── Email OTP endpoints (unchanged) ──────────────────────────────────────
 
     [HttpPost("request-otp")]
-    public IActionResult RequestOtp([FromBody] RequestOtpDto dto)
+    public async Task<IActionResult> RequestOtp([FromBody] RequestOtpDto dto)
     {
-        _otpService.GenerateOtp(dto.Email);
+        await _otpService.GenerateOtpAsync(dto.Email);
         return Ok(new { success = true });
     }
 
     [HttpPost("verify-otp")]
-    public IActionResult VerifyOtp([FromBody] VerifyOtpDto dto)
+    public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto dto)
     {
         try
         {
-            _otpService.VerifyOtp(dto.Email, dto.Otp);
+            await _otpService.VerifyOtpAsync(dto.Email, dto.Otp);
             return Ok(new { success = true });
         }
         catch (Exception ex)
