@@ -110,7 +110,7 @@ public class OtpService
 
         using var client = new SmtpClient();
 
-        client.Connect(host, port, SecureSocketOptions.StartTls);
+        client.Connect(host, 465, SecureSocketOptions.SslOnConnect);
         client.Authenticate(user, pass);
         client.Send(message);
         client.Disconnect(true);
