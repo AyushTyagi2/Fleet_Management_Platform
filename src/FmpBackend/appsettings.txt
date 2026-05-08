@@ -23,7 +23,7 @@
 
   "Smtp": {
   "Host": "smtp.gmail.com",
-  "Port": "587",
+  "Port": "465",
   "User": "as1991218113@gmail.com",
   "Pass": "sysp fuqn yrdn zqik",
   "From": "FleetOS <as1991218113@gmail.com>"
