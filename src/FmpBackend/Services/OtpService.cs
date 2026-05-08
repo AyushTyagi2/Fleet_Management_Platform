@@ -73,7 +73,7 @@ public class OtpService
     private void SendOtpEmail(string toEmail, string otp)
 {
     var host = _config["Smtp:Host"];
-    var port = int.TryParse(_config["Smtp:Port"], out var p) ? p : 587;
+    var port = int.TryParse(_config["Smtp:Port"], out var p) ? p : 465;
     var user = _config["Smtp:User"];
     var pass = _config["Smtp:Pass"];
     var from = _config["Smtp:From"] ?? user;
