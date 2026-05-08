@@ -91,6 +91,7 @@ app.UseCors("AllowFlutter");
 app.UseAuthentication();
 app.UseAuthorization();
 
+
 app.MapControllers();
 app.MapHub<ShipmentQueueHub>("/hubs/shipment-queue");
 
