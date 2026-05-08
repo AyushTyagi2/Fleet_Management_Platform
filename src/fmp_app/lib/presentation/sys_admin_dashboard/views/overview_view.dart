@@ -88,49 +88,45 @@ class _OverviewViewState extends State<OverviewView> {
             Text('PLATFORM METRICS', style: AppTextStyles.labelSm),
             const SizedBox(height: AppSpacing.sm),
 
-            // ── Compact stat rows ─────────────────────────────────────────
+            // ── Unified stat card (single horizontal card with 4 columns)
             Container(
+              height: 88,
               decoration: BoxDecoration(
                 color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppRadius.lg),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.border),
                 boxShadow: AppShadows.card,
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                child: Column(
-                  children: [
-                    _CompactStatRow(
-                      title: 'Active Drivers',
-                      value: '${_metrics!['activeDrivers'] ?? 0}',
-                      icon: Icons.local_taxi_rounded,
-                      color: AppColors.success,
-                      isFirst: true,
-                    ),
-                    const Divider(height: 1, indent: 16, endIndent: 16),
-                    _CompactStatRow(
-                      title: 'Pending Shipments',
-                      value: '${_metrics!['pendingShipments'] ?? 0}',
-                      icon: Icons.pending_actions_rounded,
-                      color: AppColors.warning,
-                    ),
-                    const Divider(height: 1, indent: 16, endIndent: 16),
-                    _CompactStatRow(
-                      title: 'Active Trips',
-                      value: '${_metrics!['activeTrips'] ?? 0}',
-                      icon: Icons.route_rounded,
-                      color: AppColors.primary,
-                    ),
-                    const Divider(height: 1, indent: 16, endIndent: 16),
-                    _CompactStatRow(
-                      title: 'Admin Overrides',
-                      value: '${_metrics!['adminOverrides'] ?? 0}',
-                      icon: Icons.admin_panel_settings_rounded,
-                      color: AppColors.error,
-                      isLast: true,
-                    ),
-                  ],
-                ),
+              child: Row(
+                children: [
+                  _StatSegment(
+                    icon: Icons.local_taxi_rounded,
+                    label: 'Active Drivers',
+                    value: '${_metrics!['activeDrivers'] ?? 0}',
+                    color: AppColors.success,
+                  ),
+                  const VerticalDivider(width: 1, indent: 14, endIndent: 14),
+                  _StatSegment(
+                    icon: Icons.pending_actions_rounded,
+                    label: 'Pending Shipments',
+                    value: '${_metrics!['pendingShipments'] ?? 0}',
+                    color: AppColors.warning,
+                  ),
+                  const VerticalDivider(width: 1, indent: 14, endIndent: 14),
+                  _StatSegment(
+                    icon: Icons.route_rounded,
+                    label: 'Active Trips',
+                    value: '${_metrics!['activeTrips'] ?? 0}',
+                    color: AppColors.primary,
+                  ),
+                  const VerticalDivider(width: 1, indent: 14, endIndent: 14),
+                  _StatSegment(
+                    icon: Icons.admin_panel_settings_rounded,
+                    label: 'Admin Overrides',
+                    value: '${_metrics!['adminOverrides'] ?? 0}',
+                    color: AppColors.error,
+                  ),
+                ],
               ),
             ),
 
@@ -201,33 +197,59 @@ class _OverviewViewState extends State<OverviewView> {
                           : createdAt;
                       final entityId = log['entityId']?.toString() ?? '';
 
-                      return ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 6),
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: isWarning
-                                ? AppColors.warningLight
-                                : AppColors.primaryLight,
-                            shape: BoxShape.circle,
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: isWarning
+                                      ? AppColors.warningLight
+                                      : AppColors.primaryLight,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  isWarning
+                                      ? Icons.priority_high_rounded
+                                      : Icons.info_outline_rounded,
+                                  size: 18,
+                                  color: isWarning ? AppColors.warning : AppColors.primary,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(child: Text(eventType, style: AppTextStyles.labelLg)),
+                                        Text(timeLabel, style: AppTextStyles.caption),
+                                      ],
+                                    ),
+                                    if (entityId.isNotEmpty) ...[
+                                      const SizedBox(height: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.background,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          entityId,
+                                          style: AppTextStyles.bodySm.copyWith(fontFamily: 'monospace', color: AppColors.textSecondary),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          child: Icon(
-                            isWarning
-                                ? Icons.priority_high_rounded
-                                : Icons.info_outline_rounded,
-                            size: 18,
-                            color:
-                                isWarning ? AppColors.warning : AppColors.primary,
-                          ),
-                        ),
-                        title: Text(eventType, style: AppTextStyles.labelLg),
-                        subtitle: entityId.isNotEmpty
-                            ? Text('Entity: $entityId',
-                                style: AppTextStyles.bodySm)
-                            : null,
-                        trailing: Text(timeLabel, style: AppTextStyles.caption),
-                      );
+                        );
                     },
                   ),
                 ),
@@ -307,6 +329,53 @@ class _CompactStatRow extends StatelessWidget {
                 color: color.withOpacity(0.25),
                 borderRadius: BorderRadius.circular(2),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Stat segment for unified stat card ───────────────────────────────────
+class _StatSegment extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  const _StatSegment({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
+                const SizedBox(height: 4),
+                Text(label, style: AppTextStyles.bodySm),
+              ],
             ),
           ],
         ),

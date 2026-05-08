@@ -233,8 +233,7 @@ class _UserCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: AppShadows.card,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -266,18 +265,17 @@ class _UserCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: rc.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                  border: Border.all(color: rc.withOpacity(0.25)),
+                  color: AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   _roleLabel(role),
-                  style: TextStyle(
-                    fontSize: 10,
+                  style: const TextStyle(
+                    fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: rc,
+                    color: AppColors.primary,
                   ),
                 ),
               ),

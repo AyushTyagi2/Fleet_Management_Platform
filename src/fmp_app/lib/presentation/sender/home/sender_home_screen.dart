@@ -76,19 +76,27 @@ class _SenderHomeScreenState extends State<SenderHomeScreen>
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(),
-                const SizedBox(height: 24),
-                _buildQuickActions(),
-                const SizedBox(height: 32),
-                _buildStatsSection(),
-                const SizedBox(height: 32),
-                _buildRecentShipments(),
-                const SizedBox(height: 20),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 900),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHeader(),
+                      const SizedBox(height: 24),
+                      _buildQuickActions(),
+                      const SizedBox(height: 32),
+                      _buildStatsSection(),
+                      const SizedBox(height: 24),
+                      _buildRecentShipments(),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -168,6 +176,13 @@ class _SenderHomeScreenState extends State<SenderHomeScreen>
   }
 
   Widget _buildQuickActions() {
+    final chips = [
+      {'icon': Icons.add_box_rounded, 'label': 'Create', 'onTap': () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Create Shipment - Coming Soon!')))},
+      {'icon': Icons.local_shipping_rounded, 'label': 'Track', 'onTap': () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Track Orders - Switch to Shipments tab')))},
+      {'icon': Icons.receipt_long_rounded, 'label': 'Billing', 'onTap': () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Billing - Switch to Billing tab')))},
+      {'icon': Icons.support_rounded, 'label': 'Support', 'onTap': () => _showSupportDialog()},
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -179,72 +194,39 @@ class _SenderHomeScreenState extends State<SenderHomeScreen>
             color: AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _QuickActionCard(
-                icon: Icons.add_box_rounded,
-                title: 'Create Shipment',
-                subtitle: 'New delivery',
-                color: AppColors.primary,
-                onTap: () {
-                  // Navigate to create shipment tab in dashboard
-                  // For now, show a snackbar
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Create Shipment - Coming Soon!')),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _QuickActionCard(
-                icon: Icons.local_shipping_rounded,
-                title: 'Track Orders',
-                subtitle: 'View status',
-                color: AppColors.success,
-                onTap: () {
-                  // Navigate to shipments tab in dashboard
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Track Orders - Switch to Shipments tab')),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _QuickActionCard(
-                icon: Icons.receipt_long_rounded,
-                title: 'Billing',
-                subtitle: 'Invoices & payments',
-                color: AppColors.warning,
-                onTap: () {
-                  // Navigate to billing tab in dashboard
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Billing - Switch to Billing tab')),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _QuickActionCard(
-                icon: Icons.support_rounded,
-                title: 'Support',
-                subtitle: 'Get help',
-                color: AppColors.info,
-                onTap: () {
-                  // Show support dialog or navigate
-                  _showSupportDialog();
-                },
-              ),
-            ),
-          ],
+        SizedBox(
+          height: 72,
+          child: Row(
+            children: chips.asMap().entries.map((e) {
+              final i = e.key;
+              final c = e.value;
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: i == chips.length - 1 ? 0 : 12),
+                  child: GestureDetector(
+                    onTap: c['onTap'] as void Function(),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEEF3FF),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(c['icon'] as IconData, size: 20, color: AppColors.primary),
+                            const SizedBox(height: 4),
+                            Text(c['label'] as String, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ],
     );
@@ -262,38 +244,40 @@ class _SenderHomeScreenState extends State<SenderHomeScreen>
             color: AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                value: _stats['active']!,
-                label: 'Active',
-                icon: Icons.directions_car_rounded,
-                color: AppColors.primary,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                value: _stats['completed']!,
-                label: 'Completed',
-                icon: Icons.check_circle_rounded,
-                color: AppColors.success,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                value: _stats['pending']!,
-                label: 'Pending',
-                icon: Icons.schedule_rounded,
-                color: AppColors.warning,
-              ),
-            ),
-          ],
+        const SizedBox(height: 12),
+        Container(
+          height: 88,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 4, offset: const Offset(0, 2))],
+          ),
+          child: Row(
+            children: [
+              _StatSegment(label: 'Active', value: _stats['active']!.toString(), icon: Icons.directions_car_rounded, color: AppColors.primary),
+              const VerticalDivider(width: 1, indent: 14, endIndent: 14),
+              _StatSegment(label: 'Completed', value: _stats['completed']!.toString(), icon: Icons.check_circle_rounded, color: AppColors.success),
+              const VerticalDivider(width: 1, indent: 14, endIndent: 14),
+              _StatSegment(label: 'Pending', value: _stats['pending']!.toString(), icon: Icons.schedule_rounded, color: AppColors.warning),
+            ],
+          ),
         ),
       ],
+    );
+  }
+
+  Widget _StatSegment({required String label, required String value, required IconData icon, required Color color}) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Row(
+          children: [
+            Container(width: 44, height: 44, decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(8)), child: Icon(icon, color: color, size: 20)),
+            const SizedBox(width: 12),
+            Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)), const SizedBox(height: 4), Text(label, style: AppTextStyles.bodySm)]),
+          ],
+        ),
+      ),
     );
   }
 

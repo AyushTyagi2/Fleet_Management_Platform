@@ -3,6 +3,9 @@ import 'package:fmp_app/app_session.dart';
 import 'package:fmp_app/core/network/api_client.dart';
 import 'package:fmp_app/core/network/api_trips.dart';
 import 'package:fmp_app/presentation/driver/profile/driver_profile_screen.dart';
+import 'package:fmp_app/presentation/driver/billing/driver_billing_screen.dart';
+import 'package:fmp_app/shared/layout/app_shell.dart';
+import 'package:fmp_app/shared/theme/app_theme.dart';
 
 // lib/presentation/driver/dashboard/driver_dashboard_screen.dart
 
@@ -69,31 +72,25 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
       ),
       const SizedBox.shrink(),
       const DriverProfileScreen(),
+      const DriverBillingScreen(),
     ];
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FA),
-      body: SafeArea(
-        child: Column(
-          children: [
-            if (_tab != 2) _Header(driverId: AppSession.driverId ?? '—'),
-            Expanded(child: IndexedStack(index: _tab, children: pages)),
-          ],
-        ),
-      ),
-      bottomNavigationBar: _DriverBottomNav(
-        current: _tab,
-        onTap: (i) {
-          if (i == 1) {
-            Navigator.pushNamed(context, '/driver-queue');
-          } else if (i == 4) {
-            Navigator.pushNamed(context, '/billing');
-          } else {
-            setState(() => _tab = i);
-          }
-        },
-      ),
-      floatingActionButton: _tab == 0
+    return AppShell(
+      currentIndex: _tab,
+      items: const [
+        NavItem(icon: Icons.home_rounded, label: 'Home'),
+        NavItem(icon: Icons.queue_rounded, label: 'Queue'),
+        NavItem(icon: Icons.person_rounded, label: 'Profile'),
+        NavItem(icon: Icons.receipt_long_rounded, label: 'Billing'),
+      ],
+      onTap: (i) {
+        if (i == 1) {
+          Navigator.pushNamed(context, '/driver-queue');
+        } else {
+          setState(() => _tab = i);
+        }
+      },
+      floatingActionButton: _tab == 0 && AppLayout.isMobile(context)
           ? FloatingActionButton.extended(
               onPressed: () => Navigator.pushNamed(context, '/driver-queue'),
               backgroundColor: const Color(0xFF1A56DB),
@@ -103,6 +100,9 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
             )
           : null,
+      body: SafeArea(
+        child: IndexedStack(index: _tab, children: pages),
+      ),
     );
   }
 }
@@ -159,51 +159,7 @@ class _HomeTab extends StatelessWidget {
   }
 }
 
-// ── Header ────────────────────────────────────────────────────────────────────
-
-class _Header extends StatelessWidget {
-  final String driverId;
-  const _Header({required this.driverId});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-      child: Row(
-        children: [
-          Container(
-            width: 42, height: 42,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF1A56DB), Color(0xFF0C3997)],
-                begin: Alignment.topLeft, end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.local_shipping_rounded, color: Colors.white, size: 22),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Good morning 👋', style: TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
-              Text('My Dashboard', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
-            ]),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(color: const Color(0xFFDEF7EC), borderRadius: BorderRadius.circular(100)),
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              Container(width: 7, height: 7, decoration: const BoxDecoration(color: Color(0xFF0E9F6E), shape: BoxShape.circle)),
-              const SizedBox(width: 6),
-              const Text('Online', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF057A55))),
-            ]),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// Header moved into AppShell sidebar/appbar
 
 // ── Body ──────────────────────────────────────────────────────────────────────
 
@@ -336,13 +292,15 @@ SliverToBoxAdapter(
             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
         const SizedBox(height: 14),
 
-        // ── search bar ──────────────────────────────────────────────────────
+        // ── search bar (no border) ─────────────────────────────────────────
         Container(
           height: 46,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE5E9F0), width: 1.5),
+            boxShadow: const [
+              BoxShadow(color: Color(0x08000000), blurRadius: 8, offset: Offset(0, 2)),
+            ],
           ),
           child: Row(children: [
             const SizedBox(width: 14),
@@ -364,9 +322,9 @@ SliverToBoxAdapter(
             if (search.isNotEmpty)
               GestureDetector(
                 onTap: () => onSearchChanged(''),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Icon(Icons.close_rounded, size: 16, color: const Color(0xFFADB5BD)),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Icon(Icons.close_rounded, size: 16, color: Color(0xFFADB5BD)),
                 ),
               )
             else
@@ -716,40 +674,7 @@ class _EmptyTrips extends StatelessWidget {
   }
 }
 
-class _DriverBottomNav extends StatelessWidget {
-  final int current;
-  final ValueChanged<int> onTap;
-  const _DriverBottomNav({required this.current, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFE5E9F0), width: 1)),
-      ),
-      child: BottomNavigationBar(
-        currentIndex: current == 1 ? 0 : current,
-        onTap: onTap,
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFF1A56DB),
-        unselectedItemColor: const Color(0xFFADB5BD),
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        elevation: 0,
-        selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: const TextStyle(fontSize: 11),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.queue_rounded), label: 'Queue'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profile'),
-          BottomNavigationBarItem(icon: Icon(Icons.receipt_long_rounded), label: 'Billing'),
-        ],
-      ),
-    );
-  }
-}
+// BottomNav removed — navigation is now handled by AppShell
 
 class _SortButton extends StatelessWidget {
   final TripSort current;

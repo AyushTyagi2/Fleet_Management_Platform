@@ -19,6 +19,7 @@ class _DriverBillingScreenState extends State<DriverBillingScreen> {
   List<TripSummary> _trips = [];
   bool _loading = true;
   String? _error;
+  int _selectedFilter = 1; // 0=Today, 1=Week, 2=Month
 
   @override
   void initState() {
@@ -68,94 +69,220 @@ class _DriverBillingScreenState extends State<DriverBillingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FA),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF111827)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Billing',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF111827)),
-        ),
-      ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Color(0xFF1A56DB))))
+    return Container(
+      color: const Color(0xFFF4F6FA),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: _loading
+          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Color(0xFF2233CC))))
           : _error != null
               ? _ErrorState(message: _error!, onRetry: _loadTrips)
               : RefreshIndicator(
-                  color: const Color(0xFF1A56DB),
+                  color: const Color(0xFF2233CC),
                   onRefresh: _loadTrips,
                   child: CustomScrollView(
                     slivers: [
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: _EarningsSummaryCard(totalEarnings: _totalEarnings, completedTrips: _paidTrips.length),
+                      SliverAppBar(
+                        expandedHeight: 220,
+                        pinned: true,
+                        backgroundColor: const Color(0xFF2233CC),
+                        iconTheme: const IconThemeData(color: Colors.white),
+                        title: const Text('Billing Dashboard',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                        centerTitle: true,
+                        flexibleSpace: FlexibleSpaceBar(
+                          background: Stack(
+                            children: [
+                              Positioned.fill(
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [Color(0xFF2233CC), Color(0xFF162082)],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned.fill(
+                                child: _EarningsSummaryContent(
+                                  totalEarnings: _totalEarnings,
+                                  completedTrips: _paidTrips.length,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
+                      
                       SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                          child: const Text('Trip Payments', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 600),
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text('Trip Payments',
+                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+                                      _buildFilterChips(),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
+                      
                       _paidTrips.isEmpty
                           ? const SliverFillRemaining(child: _EmptyBilling())
                           : SliverList(
                               delegate: SliverChildBuilderDelegate(
-                                (context, i) => Padding(
-                                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                                  child: _BillingCard(trip: _paidTrips[i]),
+                                (context, i) => Center(
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(maxWidth: 600),
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                                      child: _BillingCard(trip: _paidTrips[i]),
+                                    ),
+                                  ),
                                 ),
                                 childCount: _paidTrips.length,
                               ),
                             ),
-                      const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                      const SliverToBoxAdapter(child: SizedBox(height: 80)), // Padding for FAB
                     ],
                   ),
                 ),
+          ),
+          // if (!_loading && _error == null)
+          //   Positioned(
+          //     bottom: 24,
+          //     left: 0,
+          //     right: 0,
+          //     child: Center(
+          //       child: FloatingActionButton.extended(
+          //         onPressed: () {},
+          //         backgroundColor: const Color(0xFF2233CC),
+          //         icon: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white),
+          //         label: const Text('Withdraw Earnings',
+          //             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          //       ),
+          //     ),
+          //   ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChips() {
+    final filters = ['Today', 'Week', 'Month'];
+    return Row(
+      children: List.generate(filters.length, (i) {
+        final isSelected = _selectedFilter == i;
+        return Padding(
+          padding: EdgeInsets.only(left: i == 0 ? 0 : 8),
+          child: GestureDetector(
+            onTap: () => setState(() => _selectedFilter = i),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFF2233CC) : Colors.white,
+                borderRadius: BorderRadius.circular(100),
+                border: Border.all(
+                  color: isSelected ? const Color(0xFF2233CC) : const Color(0xFFE5E9F0),
+                ),
+              ),
+              child: Text(
+                filters[i],
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected ? Colors.white : const Color(0xFF6B7280),
+                ),
+              ),
+            ),
+          ),
+        );
+      }),
     );
   }
 }
 
-class _EarningsSummaryCard extends StatelessWidget {
+class _EarningsSummaryContent extends StatelessWidget {
   final double totalEarnings;
   final int completedTrips;
-  const _EarningsSummaryCard({required this.totalEarnings, required this.completedTrips});
+  const _EarningsSummaryContent({required this.totalEarnings, required this.completedTrips});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFF1A56DB), Color(0xFF0C3997)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: const Color(0xFF1A56DB).withOpacity(0.25), blurRadius: 20, offset: const Offset(0, 8))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Total Earnings', style: TextStyle(fontSize: 13, color: Colors.white70)),
-          const SizedBox(height: 6),
-          Text('₹${totalEarnings.toStringAsFixed(0)}', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Colors.white)),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(100)),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 60, 16, 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Total Earnings', style: TextStyle(fontSize: 14, color: Colors.white70, fontWeight: FontWeight.w500)),
+            const SizedBox(height: 8),
+            Text('₹${totalEarnings.toStringAsFixed(0)}', style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.5)),
+            const Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                const Icon(Icons.check_circle_rounded, size: 14, color: Colors.white),
-                const SizedBox(width: 6),
-                Text('$completedTrips Completed', style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
+                _StatChip(label: 'This Week', value: '₹4,500'),
+                const SizedBox(width: 8),
+                _StatChip(label: 'Pending', value: '₹1,200', isWarning: true),
+                const SizedBox(width: 8),
+                _StatChip(label: 'Trips', value: completedTrips.toString()),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool isWarning;
+
+  const _StatChip({required this.label, required this.value, this.isWarning = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withOpacity(0.2)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: isWarning ? const Color(0xFFFFE4A0) : Colors.white,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -168,24 +295,34 @@ class _BillingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: const Color(0xFFE5E9F0)), boxShadow: const [BoxShadow(color: Color(0x05000000), blurRadius: 8, offset: Offset(0, 2))]),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E9F0)),
+        boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 4))],
+      ),
       child: Row(
         children: [
-          Container(width: 42, height: 42, decoration: BoxDecoration(color: const Color(0xFFDEF7EC), borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.receipt_long_rounded, size: 20, color: Color(0xFF0E9F6E))),
-          const SizedBox(width: 12),
+          Container(
+            width: 46, height: 46,
+            decoration: BoxDecoration(color: const Color(0xFFDEF7EC), borderRadius: BorderRadius.circular(12)),
+            child: const Icon(Icons.receipt_long_rounded, size: 22, color: Color(0xFF0E9F6E)),
+          ),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(trip.tripNumber, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF111827))),
-              Text(trip.shipmentNumber, style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
+              Text(trip.tripNumber, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
+              const SizedBox(height: 2),
+              Text(trip.shipmentNumber, style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280))),
             ]),
           ),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
             if (trip.agreedPrice != null)
-              Text('₹${trip.agreedPrice!.toStringAsFixed(0)}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
-            const SizedBox(height: 2),
+              Text('₹${trip.agreedPrice!.toStringAsFixed(0)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+            const SizedBox(height: 4),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(color: const Color(0xFFDEF7EC), borderRadius: BorderRadius.circular(100)),
               child: const Text('Paid', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF057A55))),
             ),
@@ -202,15 +339,31 @@ class _EmptyBilling extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Container(width: 80, height: 80, decoration: BoxDecoration(color: const Color(0xFFEBF0FE), borderRadius: BorderRadius.circular(20)), child: const Icon(Icons.receipt_long_rounded, size: 40, color: Color(0xFF1A56DB))),
-          const SizedBox(height: 20),
-          const Text('No payments yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF111827))),
-          const SizedBox(height: 8),
-          const Text('Completed trips will appear\nhere with payment details', textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Color(0xFF6B7280), height: 1.5)),
-        ]),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          child: Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFD1D5DB), width: 1.5, style: BorderStyle.solid), // Dashed isn't natively supported easily without a package, using solid gray for now.
+            ),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Container(
+                width: 80, height: 80,
+                decoration: BoxDecoration(color: const Color(0xFFEEF1F8), borderRadius: BorderRadius.circular(24)),
+                child: const Icon(Icons.receipt_long_rounded, size: 40, color: Color(0xFF2233CC)),
+              ),
+              const SizedBox(height: 24),
+              const Text('No payments yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+              const SizedBox(height: 8),
+              const Text('Completed trips will appear here with payment details.',
+                  textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Color(0xFF6B7280), height: 1.5)),
+            ]),
+          ),
+        ),
       ),
     );
   }
@@ -233,7 +386,7 @@ class _ErrorState extends StatelessWidget {
           const SizedBox(height: 6),
           Text(message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280))),
           const SizedBox(height: 20),
-          TextButton(onPressed: onRetry, child: const Text('Try Again', style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1A56DB)))),
+          TextButton(onPressed: onRetry, child: const Text('Try Again', style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2233CC)))),
         ]),
       ),
     );

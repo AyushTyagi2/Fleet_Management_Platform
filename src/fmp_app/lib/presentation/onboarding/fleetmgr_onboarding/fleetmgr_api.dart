@@ -4,7 +4,7 @@ class FleetmgrApi {
   final Dio _dio;
 
   FleetmgrApi({Dio? dio})
-      : _dio = dio ?? Dio(BaseOptions(baseUrl: 'http://localhost:5153'));
+      : _dio = dio ?? Dio(BaseOptions(baseUrl: 'https://fmp-dep-26-1.onrender.com'));
 
   Future<void> submitFleetOnboarding({
     required String orgName,

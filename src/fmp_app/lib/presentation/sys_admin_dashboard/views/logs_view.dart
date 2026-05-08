@@ -180,36 +180,39 @@ class _LogsViewState extends State<LogsView> {
                   return Container(
                     decoration: BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                      border: Border.all(color: AppColors.border),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: AppShadows.card,
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: color.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(_eventIcon(eventType), size: 16, color: color),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: color.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(_eventIcon(eventType), size: 16, color: color),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(child: Text(eventType, style: AppTextStyles.labelLg)),
+                            Text(timeLabel, style: AppTextStyles.caption),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(eventType, style: AppTextStyles.labelLg),
-                              if (entityId.isNotEmpty)
-                                Text(
-                                  'Entity: $entityId',
-                                  style: AppTextStyles.bodySm,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                            ],
+                        if (entityId.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(entityId, style: AppTextStyles.bodySm.copyWith(fontFamily: 'monospace', color: AppColors.textSecondary), overflow: TextOverflow.ellipsis),
                           ),
-                        ),
-                        Text(timeLabel, style: AppTextStyles.caption),
+                        ],
                       ],
                     ),
                   );

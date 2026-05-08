@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 class SenderApi {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: "http://localhost:5153",
+      baseUrl: "https://fmp-dep-26-1.onrender.com",
       headers: {
         "Content-Type": "application/json",
       },

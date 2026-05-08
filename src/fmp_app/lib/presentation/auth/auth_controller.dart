@@ -10,6 +10,7 @@ enum AuthStage {
   otpSending,
   otpSent,
   verifyingOtp,
+  routing,          // OTP verified, resolving role / navigating
   googleSigningIn,
   authenticated,
   error,
@@ -59,7 +60,7 @@ class AuthController extends ChangeNotifier {
     }
   }
 
-  Future<void> verifyOtp(String otp) async {
+  Future<void> verifyOtp(String otp, {BuildContext? context}) async {
     if (otp.length < 4) {
       _setError('Invalid OTP');
       return;
@@ -73,8 +74,21 @@ class AuthController extends ChangeNotifier {
       await _authApi.verifyOtp(email!, otp);
       debugPrint('✓ OTP verified successfully');
       _stopTimer();
-      _stage = AuthStage.authenticated;
+
+      // Keep spinner alive while we resolve the role
+      _stage = AuthStage.routing;
       AppSession.email = email;
+      notifyListeners();
+
+      // If caller passed context, resolve route inline (keeps spinner)
+      if (context != null && context.mounted) {
+        final autoRouted = await tryAutoRoute(context);
+        if (!autoRouted && context.mounted) {
+          Navigator.pushReplacementNamed(context, '/role-selection');
+        }
+      }
+
+      _stage = AuthStage.authenticated;
       notifyListeners();
     } catch (e) {
       debugPrint('✗ OTP verification failed: $e');
