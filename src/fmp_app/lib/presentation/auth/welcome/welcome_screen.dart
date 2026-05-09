@@ -281,34 +281,34 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         ),
         const SizedBox(height: 14),
 
-        // Divider
-        Row(children: [
-          Expanded(child: Divider(
-              color: const Color(0xFF4A5568).withOpacity(0.18), thickness: 1)),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text('or', style: TextStyle(
-                color: const Color(0xFF4A5568).withOpacity(0.45), fontSize: 13)),
-          ),
-          Expanded(child: Divider(
-              color: const Color(0xFF4A5568).withOpacity(0.18), thickness: 1)),
-        ]),
-        const SizedBox(height: 14),
+        // // Divider
+        // Row(children: [
+        //   Expanded(child: Divider(
+        //       color: const Color(0xFF4A5568).withOpacity(0.18), thickness: 1)),
+        //   Padding(
+        //     padding: const EdgeInsets.symmetric(horizontal: 12),
+        //     child: Text('or', style: TextStyle(
+        //         color: const Color(0xFF4A5568).withOpacity(0.45), fontSize: 13)),
+        //   ),
+        //   Expanded(child: Divider(
+        //       color: const Color(0xFF4A5568).withOpacity(0.18), thickness: 1)),
+        // ]),
+        // const SizedBox(height: 14),
 
         // Google button
-        _PressableButton(
-          onTap: () => auth.signInWithGoogle(context),
-          color: Colors.white,
-          border: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
-          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            SizedBox(width: 24, height: 24,
-                child: CustomPaint(painter: _GoogleGPainter())),
-            const SizedBox(width: 10),
-            const Text('Continue with Google',
-                style: TextStyle(color: Color(0xFF1A202C), fontSize: 15,
-                    fontWeight: FontWeight.w600)),
-          ]),
-        ),
+        // _PressableButton(
+        //   onTap: () => auth.signInWithGoogle(context),
+        //   color: Colors.white,
+        //   border: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+        //   child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        //     SizedBox(width: 24, height: 24,
+        //         child: CustomPaint(painter: _GoogleGPainter())),
+        //     const SizedBox(width: 10),
+        //     const Text('Continue with Google',
+        //         style: TextStyle(color: Color(0xFF1A202C), fontSize: 15,
+        //             fontWeight: FontWeight.w600)),
+        //   ]),
+        // ),
         const SizedBox(height: 18),
 
         // Terms
