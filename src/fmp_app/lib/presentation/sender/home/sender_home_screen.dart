@@ -255,9 +255,9 @@ class _SenderHomeScreenState extends State<SenderHomeScreen>
           child: Row(
             children: [
               _StatSegment(label: 'Active', value: _stats['active']!.toString(), icon: Icons.directions_car_rounded, color: AppColors.primary),
-              const VerticalDivider(width: 1, indent: 14, endIndent: 14),
+              const VerticalDivider(width: 1, thickness: 1, indent: 14, endIndent: 14),
               _StatSegment(label: 'Completed', value: _stats['completed']!.toString(), icon: Icons.check_circle_rounded, color: AppColors.success),
-              const VerticalDivider(width: 1, indent: 14, endIndent: 14),
+              const VerticalDivider(width: 1, thickness: 1, indent: 14, endIndent: 14),
               _StatSegment(label: 'Pending', value: _stats['pending']!.toString(), icon: Icons.schedule_rounded, color: AppColors.warning),
             ],
           ),
@@ -272,9 +272,30 @@ class _SenderHomeScreenState extends State<SenderHomeScreen>
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
           children: [
-            Container(width: 44, height: 44, decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(8)), child: Icon(icon, color: color, size: 20)),
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+              child: Icon(icon, color: color, size: 20),
+            ),
             const SizedBox(width: 12),
-            Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)), const SizedBox(height: 4), Text(label, style: AppTextStyles.bodySm)]),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    value,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(label, style: AppTextStyles.bodySm),
+                ],
+              ),
+            ),
           ],
         ),
       ),

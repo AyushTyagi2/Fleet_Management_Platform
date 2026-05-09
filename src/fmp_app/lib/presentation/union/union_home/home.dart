@@ -212,27 +212,31 @@ class _UnionHomeScreenState extends State<UnionHomeScreen>
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: AppShadows.card),
           child: Row(
-            children: List.generate(statsList.length, (i) {
-              final s = statsList[i];
-              return Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Column(
+            children: [
+              for (var i = 0; i < statsList.length; i++) ...[
+                Expanded(
+                  child: Center(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(s['icon'] as IconData, size: 18, color: s['color'] as Color),
+                        Icon(statsList[i]['icon'] as IconData, size: 18, color: statsList[i]['color'] as Color),
                         const SizedBox(height: 6),
-                        Text('${s['value']}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                        Text(
+                          '${statsList[i]['value']}',
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         const SizedBox(height: 4),
-                        Text(s['label'] as String, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                        Text(statsList[i]['label'] as String, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                       ],
                     ),
-                    if (i < statsList.length - 1) const VerticalDivider(width: 20, color: AppColors.border),
-                  ],
+                  ),
                 ),
-              );
-            }),
+                if (i < statsList.length - 1)
+                  const VerticalDivider(width: 1, thickness: 1, color: AppColors.border, indent: 8, endIndent: 8),
+              ],
+            ],
           ),
         ),
       ],
@@ -333,7 +337,7 @@ class _CompactActivityRow extends StatelessWidget {
               Row(children: [
                 Text(activity['time'], style: const TextStyle(fontSize: 12, color: AppColors.textHint)),
                 const SizedBox(width: 12),
-                Text('\$${activity['amount'].toStringAsFixed(2)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                Text('₹${activity['amount'].toStringAsFixed(2)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
               ])
             ]),
           ),

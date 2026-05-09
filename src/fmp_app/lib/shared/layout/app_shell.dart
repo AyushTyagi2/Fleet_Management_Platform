@@ -26,11 +26,14 @@ class NavItem {
 
   /// If non-null, tapping this item pushes this route instead of switching tab.
   final String? pushRoute;
+  /// If true, tapping this item should trigger the shell logout flow.
+  final bool isSignOut;
 
   const NavItem({
     required this.icon,
     required this.label,
     this.pushRoute,
+    this.isSignOut = false,
   });
 }
 
@@ -239,7 +242,13 @@ class _Sidebar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppRadius.md),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(AppRadius.md),
-                      onTap: () => onTap(index),
+                      onTap: () {
+                        if (item.isSignOut) {
+                          _logout(context);
+                        } else {
+                          onTap(index);
+                        }
+                      },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 180),
                         padding: const EdgeInsets.symmetric(
@@ -578,7 +587,11 @@ class _MobileDrawer extends StatelessWidget {
                     ),
                     onTap: () {
                       Navigator.pop(context); // close drawer
-                      onTap(index);
+                      if (item.isSignOut) {
+                        _logout(context);
+                      } else {
+                        onTap(index);
+                      }
                     },
                   ),
                 );
