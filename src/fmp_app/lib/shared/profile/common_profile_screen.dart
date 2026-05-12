@@ -55,14 +55,16 @@ class CommonProfileScreen extends StatelessWidget {
                       const SizedBox(height: 16),
 
                       // ── Quick actions ──
-                      const _SectionHeader('Quick Actions'),
-                      const SizedBox(height: 8),
-                      _buildQuickActionsGrid(accent),
-                      const SizedBox(height: 16),
+                      // Quick Actions section commented out per request.
+                      // const _SectionHeader('Quick Actions'),
+                      // const SizedBox(height: 8),
+                      // _buildQuickActionsGrid(accent),
+                      // const SizedBox(height: 16),
 
                       // ── App info ──
-                      _buildAppInfoCard(accent),
-                      const SizedBox(height: 16),
+                      // App Info section commented out per request.
+                      // _buildAppInfoCard(accent),
+                      // const SizedBox(height: 16),
 
                       const SizedBox(height: 16),
                     ],
@@ -195,21 +197,24 @@ class CommonProfileScreen extends StatelessWidget {
   }
 
   Widget _buildAppInfoCard(Color accent) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.card,
-      ),
-      child: Column(
-        children: [
-          _SimpleActionRow(icon: Icons.info_outline_rounded, label: 'About FleetOS', onTap: () {}),
-          const Divider(height: 1, color: AppColors.border),
-          _SimpleActionRow(icon: Icons.policy_outlined, label: 'Terms & Privacy', onTap: () {}),
-        ],
-      ),
-    );
+    // About & Terms sections commented out per request.
+    // Original UI preserved below for easy restoration:
+    // return Container(
+    //   decoration: BoxDecoration(
+    //     color: Colors.white,
+    //     borderRadius: BorderRadius.circular(AppRadius.md),
+    //     border: Border.all(color: AppColors.border),
+    //     boxShadow: AppShadows.card,
+    //   ),
+    //   child: Column(
+    //     children: [
+    //       _SimpleActionRow(icon: Icons.info_outline_rounded, label: 'About FleetOS', onTap: () {}),
+    //       const Divider(height: 1, color: AppColors.border),
+    //       _SimpleActionRow(icon: Icons.policy_outlined, label: 'Terms & Privacy', onTap: () {}),
+    //     ],
+    //   ),
+    // );
+    return const SizedBox.shrink();
   }
 }
 

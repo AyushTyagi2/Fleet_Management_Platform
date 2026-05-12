@@ -85,14 +85,15 @@ class _SenderHomeScreenState extends State<SenderHomeScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildHeader(),
-                      const SizedBox(height: 24),
-                      _buildQuickActions(),
-                      const SizedBox(height: 32),
-                      _buildStatsSection(),
-                      const SizedBox(height: 24),
-                      _buildRecentShipments(),
-                      const SizedBox(height: 20),
+                        _buildHeader(),
+                        const SizedBox(height: 24),
+                        // Quick Actions section commented out per request.
+                        // _buildQuickActions(),
+                        // const SizedBox(height: 32),
+                        _buildStatsSection(),
+                        const SizedBox(height: 24),
+                        _buildRecentShipments(),
+                        const SizedBox(height: 20),
                     ],
                   ),
                 ),

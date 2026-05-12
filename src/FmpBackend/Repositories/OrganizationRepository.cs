@@ -62,4 +62,9 @@ public class OrganizationRepository
         _db.SaveChanges();
         return org;
     }
+    public async Task<Organization?> GetByIdAsync(Guid id)
+{
+    return await _db.Organizations
+        .FirstOrDefaultAsync(o => o.Id == id);
+}
 }

@@ -29,4 +29,9 @@ public class AddressRepository
         .Where(a => a.OwnerId == ownerId && a.OwnerType == ownerType && a.IsActive)
         .FirstOrDefaultAsync();
 }
+public async Task<Address?> GetByIdAsync(Guid id)
+{
+    return await _context.Addresses
+        .FirstOrDefaultAsync(a => a.Id == id);
+}
 }

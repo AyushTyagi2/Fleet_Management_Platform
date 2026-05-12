@@ -203,19 +203,38 @@ if (pickupAddress == null)
             .ToList();
     }
 
-    public async Task<List<object>> GetPendingShipmentsAsync()
+public async Task<List<object>> GetPendingShipmentsAsync()
+{
+    var shipments = await _ship.GetByStatusAsync("pending_approval");
+
+    var result = new List<object>();
+
+    foreach (var s in shipments)
     {
-        var shipments = await _ship.GetByStatusAsync("pending_approval");
-        return shipments.Select(s => (object)new
+        var pickupAddress = await _addressRepo.GetByIdAsync(s.PickupAddressId);
+        var dropAddress   = await _addressRepo.GetByIdAsync(s.DropAddressId);
+        var senderOrg     = await _orgRepo.GetByIdAsync(s.SenderOrganizationId);
+        var receiverOrg   = await _orgRepo.GetByIdAsync(s.ReceiverOrganizationId);
+
+        result.Add(new
         {
             s.Id,
             s.ShipmentNumber,
             s.CargoType,
             s.CargoWeightKg,
             s.Status,
-            s.CreatedAt
-        }).ToList();
+            s.IsUrgent,
+            s.PackageCount,
+            s.CreatedAt,
+            OriginCity        = pickupAddress?.City,
+            DestinationCity   = dropAddress?.City,
+            SenderCompany     = senderOrg?.Name,
+            ReceiverCompany   = receiverOrg?.Name,
+        });
     }
+
+    return result;
+}
 
     /// <summary>
     /// Returns shipments for any status. Used by admin to view all shipments.
