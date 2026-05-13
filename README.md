@@ -215,14 +215,3 @@ flutter run
 | `SysAdminController` | `/sysadmin` | Metrics, logs, user management, force-assign |
 
 ---
-
-## 10. Known Limitations
-
-| Area | Detail |
-|:---|:---|
-| DB migrations | Schema managed via raw SQL; EF Core migrations not implemented |
-| Queue concurrency | Only one active `QueueEvent` supported globally at a time |
-| Worker latency | Window transitions can lag up to 15 seconds |
-| Horizontal scaling | `QueueMaintenanceWorker` is not distributed-lock safe — single instance only |
-| Route consistency | `/drivers` and `/vehicles` lack the `/api/` prefix used by other routes |
-| Credentials | Sensitive config must be set manually in `appsettings.json` |
