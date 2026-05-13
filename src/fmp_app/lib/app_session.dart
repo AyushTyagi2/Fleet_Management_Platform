@@ -7,12 +7,14 @@ class AppSession {
   static String? driverId;
   static String? token;
   static String? role;
-
+// In app_session.dart
+static bool hasVehicle = false; // set to true after API succeeds, persist in SharedPreferences
   static Future<void> restore() async {
     email    = await _storage.read(key: 'email');
     driverId = await _storage.read(key: 'driver_id');
     token    = await _storage.read(key: 'token');
     role     = await _storage.read(key: 'role');
+    hasVehicle = (await _storage.read(key: 'hasVehicle')) == 'true';
   }
 
   static Future<void> save({

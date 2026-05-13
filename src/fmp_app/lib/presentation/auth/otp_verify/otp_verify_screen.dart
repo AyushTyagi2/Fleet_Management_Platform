@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fmp_app/shared/theme/app_theme.dart';
-import '../auth_controller.dart';
+import 'package:fmp_app/core/network/auth_controller.dart';
 
 // lib/presentation/auth/otp_verify/otp_verify_screen.dart
 

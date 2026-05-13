@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'presentation/auth/auth_controller.dart';
+
+import 'package:fmp_app/core/network/auth_controller.dart';
 import 'presentation/fleetmgr/fleet_state.dart';
 import 'routes/app_router.dart';
-import 'package:fmp_app/presentation/auth/auth_api.dart';
+import 'package:fmp_app/core/network/auth_api.dart';
 // TODO: add this import once the file exists
 import 'package:fmp_app/shared/theme/app_theme.dart';
 

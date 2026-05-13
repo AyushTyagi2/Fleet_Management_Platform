@@ -1,103 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../../core/models/shipment.dart';
-import '../../../core/network/api_client.dart';
-import '../../../core/network/api_shipment_queue.dart';
 
-class ShipmentDetailScreen extends StatefulWidget {
+class ShipmentDetailScreen extends StatelessWidget {
   final Shipment shipment;
-  final String   driverId;
 
   const ShipmentDetailScreen({
     super.key,
     required this.shipment,
-    required this.driverId,
   });
 
   @override
-  State<ShipmentDetailScreen> createState() => _ShipmentDetailScreenState();
-}
-
-class _ShipmentDetailScreenState extends State<ShipmentDetailScreen> {
-  late final ShipmentApiService _api;
-  bool _isAccepting = false;
-  bool _accepted    = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _api = ShipmentApiService(ApiClient());
-  }
-
-  Future<void> _handleAccept() async {
-    setState(() => _isAccepting = true);
-
-    try {
-      final result = await _api.acceptShipment(
-        shipmentQueueId: widget.shipment.id,   // ← renamed parameter
-        driverId:        widget.driverId,
-      );
-
-      if (!mounted) return;
-
-      if (result.success) {
-        setState(() => _accepted = true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Shipment accepted! Check your assigned jobs.'),
-            backgroundColor: Color(0xFF4CAF50),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        await Future.delayed(const Duration(milliseconds: 800));
-        if (mounted) Navigator.pop(context);
-      } else {
-        _showAlreadyTakenDialog();
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isAccepting = false);
-    }
-  }
-
-  void _showAlreadyTakenDialog() {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber, color: Colors.orange),
-            SizedBox(width: 8),
-            Text('Already Taken'),
-          ],
-        ),
-        content: const Text(
-          'Another driver just accepted this shipment. '
-          'Go back to the queue to find another one.',
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: const Text('Back to Queue'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final s = widget.shipment;
+    final s = shipment;
 
     return Scaffold(
       appBar: AppBar(
@@ -192,36 +106,6 @@ class _ShipmentDetailScreenState extends State<ShipmentDetailScreen> {
 
             const SizedBox(height: 32),
           ],
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: SizedBox(
-            width: double.infinity,
-            height: 54,
-            child: ElevatedButton(
-              onPressed: (_accepted || _isAccepting) ? null : _handleAccept,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1B3A6B),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-              child: _isAccepting
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
-                    )
-                  : Text(
-                      _accepted ? 'Accepted ✓' : 'Accept Shipment',
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-            ),
-          ),
         ),
       ),
     );

@@ -45,7 +45,7 @@ class _QueueEventDetailScreenState extends State<QueueEventDetailScreen> {
   }
 
   void _updateRemaining() {
-    final end  = _parseUtc(_event['endTime'] as String? ?? '');
+    final end = _parseUtc(_event['endTime'] as String? ?? '');
     if (end == null) { setState(() => _remaining = Duration.zero); return; }
     final diff = end.difference(DateTime.now());
     setState(() => _remaining = diff.isNegative ? Duration.zero : diff);
@@ -139,9 +139,9 @@ class _QueueEventDetailScreenState extends State<QueueEventDetailScreen> {
                 child: Text(
                   live ? 'LIVE' : 'CLOSED',
                   style: TextStyle(
-                    color       : live ? Colors.white : AppColors.textSecondary,
-                    fontSize    : 11,
-                    fontWeight  : FontWeight.w800,
+                    color        : live ? Colors.white : AppColors.textSecondary,
+                    fontSize     : 11,
+                    fontWeight   : FontWeight.w800,
                     letterSpacing: 0.6,
                   ),
                 ),
@@ -246,9 +246,9 @@ class _CountdownBanner extends StatelessWidget {
         Text(
           isLive ? fmtFn(remaining) : 'Ended',
           style: TextStyle(
-            fontSize    : 28,
-            fontWeight  : FontWeight.w800,
-            color       : isLive
+            fontSize     : 28,
+            fontWeight   : FontWeight.w800,
+            color        : isLive
                 ? const Color(0xFF057A55)
                 : AppColors.textSecondary,
             letterSpacing: -0.5,
@@ -292,6 +292,7 @@ class _ToggleCard extends StatelessWidget {
       boxShadow   : AppShadows.card,
     ),
     child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
           width     : 44,
@@ -309,9 +310,12 @@ class _ToggleCard extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 14),
-        Expanded(
+        // FIX: use Flexible so the text column shrinks to available space
+        // instead of overflowing and causing vertical character rendering
+        Flexible(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize      : MainAxisSize.min,
             children: [
               Text(
                 isLive ? 'Queue is Live' : 'Queue is Closed',
@@ -320,6 +324,8 @@ class _ToggleCard extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                   color     : AppColors.textPrimary,
                 ),
+                maxLines : 1,
+                overflow : TextOverflow.ellipsis,
               ),
               const SizedBox(height: 2),
               Text(
@@ -330,17 +336,24 @@ class _ToggleCard extends StatelessWidget {
                   fontSize: 12,
                   color   : AppColors.textSecondary,
                 ),
+                maxLines : 2,
+                overflow : TextOverflow.ellipsis,
               ),
             ],
           ),
         ),
         const SizedBox(width: 12),
+        // FIX: fixed-width SizedBox so the button never competes with text
         SizedBox(
+          width : 80,
           height: 40,
           child : toggling
-              ? const SizedBox(
-                  width : 24, height: 24,
-                  child : CircularProgressIndicator(strokeWidth: 2.5),
+              ? const Center(
+                  child: SizedBox(
+                    width : 24,
+                    height: 24,
+                    child : CircularProgressIndicator(strokeWidth: 2.5),
+                  ),
                 )
               : ElevatedButton(
                   onPressed: onToggle,
@@ -350,8 +363,7 @@ class _ToggleCard extends StatelessWidget {
                         : const Color(0xFF057A55),
                     foregroundColor: Colors.white,
                     elevation      : 0,
-                    padding        : const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 0),
+                    padding        : EdgeInsets.zero,
                     shape          : RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),

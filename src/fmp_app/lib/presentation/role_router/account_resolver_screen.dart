@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fmp_app/presentation/auth/auth_controller.dart';
+import 'package:fmp_app/core/network/auth_controller.dart';
 
 class AccountResolverScreen extends StatelessWidget {
   const AccountResolverScreen({super.key});

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fmp_app/app_session.dart';
 import 'package:fmp_app/core/network/api_client.dart';
 import 'package:fmp_app/core/network/api_shipment_queue.dart';
-
+import './widgets/vehicle_registeration_dialog.dart';
 // lib/presentation/driver/queue/driver_queue_screen.dart
 //
 // ── Queue contract (matches plan) ────────────────────────────────────────────
@@ -51,14 +51,24 @@ class _DriverQueueScreenState extends State<DriverQueueScreen> {
   Duration   _remaining = Duration.zero;
 
   @override
-  void initState() {
-    super.initState();
-    _api = ShipmentApiService(_apiClient);
-    _refresh();
-    // Poll every 3 s so the list of accepted shipments and claimableCount
-    // stay in sync without requiring push notifications.
-    _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) => _refresh());
-  }
+void initState() {
+  super.initState();
+  _api = ShipmentApiService(_apiClient);
+
+  // ── Vehicle registration gate ─────────────────────────────────────────
+  // Blocks entry into the queue until the driver has submitted vehicle info.
+  // Once AppSession.hasVehicle is true the dialog is skipped on next open.
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    await VehicleRegistrationDialog.showIfNeeded(
+      context,
+      driverId: AppSession.driverId ?? '',
+      alreadyRegistered: AppSession.hasVehicle, // add this bool to AppSession
+    );
+    // Only start polling AFTER the dialog is dismissed
+   
+  });
+  // ─────────────────────────────────────────────────────────────────────
+}
 
   @override
   void dispose() {

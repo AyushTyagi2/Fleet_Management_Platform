@@ -221,8 +221,9 @@ class _UnionHomeScreenState extends State<UnionHomeScreen>
                       children: [
                         Icon(statsList[i]['icon'] as IconData, size: 18, color: statsList[i]['color'] as Color),
                         const SizedBox(height: 6),
+                        // FIX: was '{statsList[i]['value']}' — missing $ and conflicting quotes
                         Text(
-                          '${statsList[i]['value']}',
+                          "${statsList[i]['value']}",
                           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

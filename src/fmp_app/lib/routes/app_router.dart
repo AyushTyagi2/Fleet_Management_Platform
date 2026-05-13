@@ -57,7 +57,7 @@ class AppRouter {
     sendrecvDashboard: (_) => const SenderDashboardScreen(),
     fleetDashboard:    (_) => const FleetDashboardScreen(),
     sysadmin:          (_) => const SysAdminDashboardScreen(),
-    unionDashboard:    (_) => UnionDashboardScreen(driverId: AppSession.driverId ?? ''),
+    unionDashboard:    (_) => UnionDashboardScreen(),
     driverQueue:       (_) => const DriverQueueScreen(),
     tripDetail:        (_) => const DriverTripDetailScreen(),
     createShipment:    (_) => const SenderCreateShipmentScreen(),

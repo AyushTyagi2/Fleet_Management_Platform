@@ -12,9 +12,8 @@ import '../../../shared/layout/app_shell.dart';
 // ─────────────────────────────────────────────────────────────────────────────
 
 class UnionDashboardScreen extends StatefulWidget {
-  final String driverId;
 
-  const UnionDashboardScreen({super.key, required this.driverId});
+  const UnionDashboardScreen();
 
   @override
   State<UnionDashboardScreen> createState() => _UnionDashboardScreenState();
@@ -25,9 +24,9 @@ class _UnionDashboardScreenState extends State<UnionDashboardScreen> {
 
   late final _pages = [
     const UnionHomeScreen(),
-    QueueScreen(driverId: widget.driverId),
+    const QueueScreen(),
     const QueueEventsScreen(),
-    const UnionRequestScreen(),
+     UnionRequestScreen(),
     const UnionProfileScreen(),
   ];
 

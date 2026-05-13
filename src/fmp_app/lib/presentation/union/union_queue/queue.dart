@@ -6,13 +6,8 @@ import '../../../core/network/api_shipment_queue.dart';
 import 'shipment_detail_screen.dart';
 import '../../../shared/theme/app_theme.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// UNION QUEUE SCREEN — with Live/Unlive toggle
-// ─────────────────────────────────────────────────────────────────────────────
-
 class QueueScreen extends StatefulWidget {
-  final String driverId;
-  const QueueScreen({super.key, required this.driverId});
+  const QueueScreen({super.key});
 
   @override
   State<QueueScreen> createState() => _QueueScreenState();
@@ -29,20 +24,17 @@ class _QueueScreenState extends State<QueueScreen> {
   int            _totalPages       = 1;
   Timer?         _autoRefreshTimer;
 
-  // Live-status state
   bool    _isLive            = false;
   String? _activeEventId;
   bool    _toggling          = false;
 
   static const _refreshIntervalSeconds = 5;
-
-  // ─── DEBUG TAG ─────────────────────────────────────────────────────────────
   static const _tag = '[QueueScreen]';
 
   @override
   void initState() {
     super.initState();
-    debugPrint('$_tag initState called — driverId: ${widget.driverId}');
+    debugPrint('$_tag initState called');
     _api = ShipmentApiService(ApiClient());
     _loadQueue();
     _fetchLiveStatus();
@@ -109,16 +101,12 @@ class _QueueScreenState extends State<QueueScreen> {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // LIVE STATUS FETCH — most likely source of toggle bugs
-  // ─────────────────────────────────────────────────────────────────────────
   Future<void> _fetchLiveStatus() async {
     debugPrint('$_tag _fetchLiveStatus called — '
         'current _isLive: $_isLive, _activeEventId: $_activeEventId, _toggling: $_toggling');
     try {
       final data = await _api.getQueueLiveStatus();
 
-      // ── Raw response dump ─────────────────────────────────────────────────
       debugPrint('$_tag _fetchLiveStatus RAW response: $data');
       debugPrint('$_tag   Keys present   : ${data.keys.toList()}');
       debugPrint('$_tag   isLive raw     : ${data['isLive']}  (runtimeType: ${data['isLive']?.runtimeType})');
@@ -129,8 +117,6 @@ class _QueueScreenState extends State<QueueScreen> {
         return;
       }
       if (_toggling) {
-        // ⚠️  This is a common bug source: a stale poll arriving mid-toggle
-        // can snap the UI back to the wrong state before the API responds.
         debugPrint('$_tag _fetchLiveStatus — _toggling is TRUE, '
             'SKIPPING setState to avoid overwriting optimistic flip. '
             'Polled isLive=${data['isLive']}, current UI _isLive=$_isLive');
@@ -140,7 +126,6 @@ class _QueueScreenState extends State<QueueScreen> {
       final polledIsLive  = data['isLive'] as bool? ?? false;
       final polledEventId = data['eventId'] as String?;
 
-      // ── Detect unexpected state drift ─────────────────────────────────────
       if (polledIsLive != _isLive) {
         debugPrint('$_tag ⚠️  STATE DRIFT detected — '
             'UI _isLive=$_isLive but server says isLive=$polledIsLive. '
@@ -166,17 +151,9 @@ class _QueueScreenState extends State<QueueScreen> {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // TOGGLE — the main action handler
-  //
-  // Flow:
-  //   No active event  → show _CreateQueueSheet to seed a new event
-  //   Active event     → toggle live ↔ closed on the existing event
-  // ─────────────────────────────────────────────────────────────────────────
   Future<void> _toggleLive() async {
     if (_toggling) return;
 
-    // ── No event yet → open creation sheet ──────────────────────────────────
     if (_activeEventId == null) {
       final created = await showModalBottomSheet<bool>(
         context            : context,
@@ -198,7 +175,6 @@ class _QueueScreenState extends State<QueueScreen> {
       return;
     }
 
-    // ── Toggle existing event ────────────────────────────────────────────────
     final previousState   = _isLive;
     final optimisticState = !_isLive;
     setState(() { _toggling = true; _isLive = optimisticState; });
@@ -242,7 +218,7 @@ class _QueueScreenState extends State<QueueScreen> {
         title: const Text('Shipment Queue'),
         actions: [
           _LiveToggleButton(
-            isLive: _isLive,
+            isLive  : _isLive,
             toggling: _toggling,
             hasEvent: _activeEventId != null,
             onToggle: _toggleLive,
@@ -251,8 +227,7 @@ class _QueueScreenState extends State<QueueScreen> {
             const Padding(
               padding: EdgeInsets.all(14),
               child: SizedBox(
-                width: 20,
-                height: 20,
+                width: 20, height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
                   color: AppColors.primary,
@@ -338,24 +313,22 @@ class _QueueScreenState extends State<QueueScreen> {
       child: Column(
         children: [
           _QueueStatusBanner(
-            isLive: _isLive,
-            shipmentCount: _shipments.length,
+            isLive        : _isLive,
+            shipmentCount : _shipments.length,
             refreshSeconds: _refreshIntervalSeconds,
           ),
           Expanded(
             child: ListView.separated(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              itemCount: _shipments.length,
+              padding         : const EdgeInsets.all(AppSpacing.md),
+              itemCount       : _shipments.length,
               separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (ctx, i) => _QueueShipmentCard(
                 shipment: _shipments[i],
-                driverId: widget.driverId,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => ShipmentDetailScreen(
                       shipment: _shipments[i],
-                      driverId: widget.driverId,
                     ),
                   ),
                 ),
@@ -364,24 +337,22 @@ class _QueueScreenState extends State<QueueScreen> {
           ),
           if (_totalPages > 1)
             Container(
-              color: AppColors.surface,
+              color  : AppColors.surface,
               padding: const EdgeInsets.all(AppSpacing.sm),
-              child: Row(
+              child  : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.chevron_left_rounded),
+                    icon     : const Icon(Icons.chevron_left_rounded),
                     onPressed: _currentPage > 1
                         ? () => _loadQueue(page: _currentPage - 1)
                         : null,
                     color: AppColors.primary,
                   ),
-                  Text(
-                    'Page $_currentPage of $_totalPages',
-                    style: AppTextStyles.labelMd,
-                  ),
+                  Text('Page $_currentPage of $_totalPages',
+                      style: AppTextStyles.labelMd),
                   IconButton(
-                    icon: const Icon(Icons.chevron_right_rounded),
+                    icon     : const Icon(Icons.chevron_right_rounded),
                     onPressed: _currentPage < _totalPages
                         ? () => _loadQueue(page: _currentPage + 1)
                         : null,
@@ -397,12 +368,6 @@ class _QueueScreenState extends State<QueueScreen> {
 }
 
 // ─── Live Toggle Button ───────────────────────────────────────────────────────
-
-// ─── Drop-in replacement for _LiveToggleButton ───────────────────────────────
-// Paste this class over your existing one temporarily.
-// It adds a raw pointer listener OUTSIDE the GestureDetector to catch
-// whether touches are even reaching the widget at all.
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _LiveToggleButton extends StatefulWidget {
   final bool isLive;
@@ -428,14 +393,14 @@ class _LiveToggleButtonState extends State<_LiveToggleButton>
 
   late bool _isLive;
 
-  static const _tag     = '[LiveToggleButton]';
+  static const _tag      = '[LiveToggleButton]';
   static const _offColor = Color(0xFF374151);
   static const _onColor  = Color(0xFF057A55);
   static const double _trackW   = 100;
   static const double _thumbD   = 26;
   static const double _pad      = 4;
-  static const double _thumbOn  = _trackW - _thumbD - (_pad*2); // 73
-  static const double _thumbOff = _pad;                      // 3
+  static const double _thumbOn  = _trackW - _thumbD - (_pad * 2);
+  static const double _thumbOff = _pad;
 
   @override
   void initState() {
@@ -444,9 +409,9 @@ class _LiveToggleButtonState extends State<_LiveToggleButton>
     debugPrint('$_tag initState — isLive=$_isLive hasEvent=${widget.hasEvent} '
         'toggling=${widget.toggling}');
     _ctrl = AnimationController(
-      vsync: this,
+      vsync   : this,
       duration: const Duration(milliseconds: 280),
-      value: _isLive ? 1.0 : 0.0,
+      value   : _isLive ? 1.0 : 0.0,
     );
     _slideAnim = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
   }
@@ -474,17 +439,14 @@ class _LiveToggleButtonState extends State<_LiveToggleButton>
     super.dispose();
   }
 
-  // ─── STEP 1: does ANY pointer land on this widget? ───────────────────────
   void _onPointerDown(PointerDownEvent e) {
-    debugPrint('$_tag ✅ POINTER DOWN at ${e.localPosition} — '
-        'this confirms the widget IS receiving raw touch events');
+    debugPrint('$_tag ✅ POINTER DOWN at ${e.localPosition}');
   }
 
   void _onPointerUp(PointerUpEvent e) {
     debugPrint('$_tag ✅ POINTER UP at ${e.localPosition}');
   }
 
-  // ─── STEP 2: does the GestureDetector fire? ──────────────────────────────
   void _onTapDown(TapDownDetails d) {
     debugPrint('$_tag ✅ TAP DOWN — GestureDetector recognised a tap start '
         'at ${d.localPosition}');
@@ -496,9 +458,7 @@ class _LiveToggleButtonState extends State<_LiveToggleButton>
   }
 
   void _onTapCancel() {
-    debugPrint('$_tag ⚠️  TAP CANCELLED — pointer moved out or another '
-        'gesture won the arena. This is the #1 reason taps silently vanish '
-        'inside AppBar action widgets.');
+    debugPrint('$_tag ⚠️  TAP CANCELLED');
   }
 
   @override
@@ -510,14 +470,13 @@ class _LiveToggleButtonState extends State<_LiveToggleButton>
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
       child: Listener(
-        // Raw pointer listener — fires even if GestureDetector is blocked
         onPointerDown: _onPointerDown,
-        onPointerUp:   _onPointerUp,
+        onPointerUp  : _onPointerUp,
         child: GestureDetector(
-          behavior: HitTestBehavior.opaque, // ← crucial: fills the whole box
-          onTapDown:   _onTapDown,
-          onTap:       _onTap,
-          onTapCancel: _onTapCancel,
+          behavior    : HitTestBehavior.opaque,
+          onTapDown   : _onTapDown,
+          onTap       : _onTap,
+          onTapCancel : _onTapCancel,
           child: AnimatedBuilder(
             animation: _ctrl,
             builder: (_, __) {
@@ -526,15 +485,14 @@ class _LiveToggleButtonState extends State<_LiveToggleButton>
               final bg        = Color.lerp(_offColor, _onColor, t)!;
 
               return Container(
-                width: _trackW,
-                height: 30,
-                decoration: BoxDecoration(
-                  color: bg,
-                  borderRadius: BorderRadius.circular(30),
+                width      : _trackW,
+                height     : 30,
+                decoration : BoxDecoration(
+                  color        : bg,
+                  borderRadius : BorderRadius.circular(30),
                 ),
                 child: Stack(
                   children: [
-                    // LIVE label
                     Positioned(
                       left: 10, top: 0, bottom: 0,
                       child: Opacity(
@@ -543,15 +501,14 @@ class _LiveToggleButtonState extends State<_LiveToggleButton>
                           alignment: Alignment.centerRight,
                           child: Text('LIVE',
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
+                                color      : Colors.white,
+                                fontSize   : 10,
+                                fontWeight : FontWeight.w800,
                                 letterSpacing: 0.8,
                               )),
                         ),
                       ),
                     ),
-                    // OFF label
                     Positioned(
                       right: 10, top: 0, bottom: 0,
                       child: Opacity(
@@ -560,46 +517,45 @@ class _LiveToggleButtonState extends State<_LiveToggleButton>
                           alignment: Alignment.centerLeft,
                           child: Text('OFF',
                               style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
+                                color      : Colors.white70,
+                                fontSize   : 10,
+                                fontWeight : FontWeight.w800,
                                 letterSpacing: 0.8,
                               )),
                         ),
                       ),
                     ),
-                    // Thumb
                     Positioned(
-                      left: thumbLeft,
-                      top: _pad,
+                      left  : thumbLeft,
+                      top   : _pad,
                       bottom: _pad,
-                      child: Container(
-                        width: _thumbD,
+                      child : Container(
+                        width     : _thumbD,
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
+                          color    : Colors.white,
+                          shape    : BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
+                              color     : Colors.black.withOpacity(0.15),
                               blurRadius: 4,
-                              offset: const Offset(0, 1),
+                              offset    : const Offset(0, 1),
                             ),
                           ],
                         ),
                         child: Center(
                           child: widget.toggling
                               ? const SizedBox(
-                                  width: 12,
+                                  width : 12,
                                   height: 12,
-                                  child: CircularProgressIndicator(
+                                  child : CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Color(0xFF374151),
+                                    color      : Color(0xFF374151),
                                   ),
                                 )
                               : _isLive
                                   ? _PulsingDot()
                                   : Container(
-                                      width: 6,
+                                      width : 6,
                                       height: 6,
                                       decoration: const BoxDecoration(
                                         color: Color(0xFF9CA3AF),
@@ -618,18 +574,6 @@ class _LiveToggleButtonState extends State<_LiveToggleButton>
       ),
     );
   }
-}
-class _OfflineDot extends StatelessWidget {
-  const _OfflineDot();
-  @override
-  Widget build(BuildContext context) => Container(
-        width: 8,
-        height: 8,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.5),
-          shape: BoxShape.circle,
-        ),
-      );
 }
 
 class _PulsingDot extends StatefulWidget {
@@ -661,7 +605,7 @@ class _PulsingDotState extends State<_PulsingDot>
   Widget build(BuildContext context) => FadeTransition(
         opacity: _anim,
         child: Container(
-          width: 8,
+          width : 8,
           height: 8,
           decoration: const BoxDecoration(
               color: Color(0xFF34D399), shape: BoxShape.circle),
@@ -686,13 +630,13 @@ class _QueueStatusBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      color: isLive ? const Color(0xFFDEF7EC) : const Color(0xFFF3F4F6),
+      padding : const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      color   : isLive ? const Color(0xFFDEF7EC) : const Color(0xFFF3F4F6),
       child: Row(
         children: [
           Icon(
             isLive ? Icons.sensors_rounded : Icons.sensors_off_rounded,
-            size: 15,
+            size : 15,
             color: isLive ? const Color(0xFF057A55) : const Color(0xFF9CA3AF),
           ),
           const SizedBox(width: 8),
@@ -702,9 +646,9 @@ class _QueueStatusBanner extends StatelessWidget {
                   ? 'Queue LIVE — $shipmentCount shipment${shipmentCount == 1 ? '' : 's'} visible to drivers'
                   : 'Queue OFFLINE — drivers cannot see shipments. Tap OFFLINE to go live.',
               style: TextStyle(
-                fontSize: 12,
+                fontSize  : 12,
                 fontWeight: FontWeight.w500,
-                color: isLive
+                color     : isLive
                     ? const Color(0xFF057A55)
                     : const Color(0xFF6B7280),
               ),
@@ -719,13 +663,11 @@ class _QueueStatusBanner extends StatelessWidget {
 // ─── Queue Shipment Card ──────────────────────────────────────────────────────
 
 class _QueueShipmentCard extends StatelessWidget {
-  final Shipment shipment;
-  final String driverId;
+  final Shipment     shipment;
   final VoidCallback onTap;
 
   const _QueueShipmentCard({
     required this.shipment,
-    required this.driverId,
     required this.onTap,
   });
 
@@ -741,9 +683,9 @@ class _QueueShipmentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
+        color        : AppColors.surface,
+        borderRadius : BorderRadius.circular(AppRadius.lg),
+        border       : Border.all(
           color: shipment.isUrgent
               ? AppColors.error.withOpacity(0.4)
               : AppColors.border,
@@ -751,11 +693,11 @@ class _QueueShipmentCard extends StatelessWidget {
         boxShadow: AppShadows.card,
       ),
       child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        color        : Colors.transparent,
+        borderRadius : BorderRadius.circular(AppRadius.lg),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          onTap: onTap,
+          onTap       : onTap,
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(
@@ -770,8 +712,8 @@ class _QueueShipmentCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 7, vertical: 3),
                         decoration: BoxDecoration(
-                          color: AppColors.errorLight,
-                          borderRadius: BorderRadius.circular(AppRadius.pill),
+                          color        : AppColors.errorLight,
+                          borderRadius : BorderRadius.circular(AppRadius.pill),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
@@ -779,13 +721,11 @@ class _QueueShipmentCard extends StatelessWidget {
                             Icon(Icons.bolt_rounded,
                                 size: 12, color: AppColors.error),
                             SizedBox(width: 2),
-                            Text(
-                              'URGENT',
-                              style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.error),
-                            ),
+                            Text('URGENT',
+                                style: TextStyle(
+                                    fontSize  : 10,
+                                    fontWeight: FontWeight.w800,
+                                    color     : AppColors.error)),
                           ],
                         ),
                       ),
@@ -805,16 +745,17 @@ class _QueueShipmentCard extends StatelessWidget {
                     Column(
                       children: [
                         Container(
-                          width: 10,
+                          width : 10,
                           height: 10,
                           decoration: BoxDecoration(
-                            color: AppColors.success,
-                            shape: BoxShape.circle,
-                            border:
-                                Border.all(color: AppColors.success, width: 2),
+                            color : AppColors.success,
+                            shape : BoxShape.circle,
+                            border: Border.all(
+                                color: AppColors.success, width: 2),
                           ),
                         ),
-                        Container(width: 2, height: 20, color: AppColors.border),
+                        Container(
+                            width: 2, height: 20, color: AppColors.border),
                         const Icon(Icons.location_on_rounded,
                             size: 14, color: AppColors.error),
                       ],
@@ -825,12 +766,12 @@ class _QueueShipmentCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(shipment.pickupLocation,
-                              style: AppTextStyles.labelLg,
+                              style   : AppTextStyles.labelLg,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis),
                           const SizedBox(height: 12),
                           Text(shipment.dropLocation,
-                              style: AppTextStyles.labelLg,
+                              style   : AppTextStyles.labelLg,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis),
                         ],
@@ -855,13 +796,11 @@ class _QueueShipmentCard extends StatelessWidget {
                     Text(_timeAgo(shipment.createdAt),
                         style: AppTextStyles.bodySm),
                     const Spacer(),
-                    const Text(
-                      'View Details →',
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primary),
-                    ),
+                    const Text('View Details →',
+                        style: TextStyle(
+                            fontSize  : 12,
+                            fontWeight: FontWeight.w600,
+                            color     : AppColors.primary)),
                   ],
                 ),
               ],
@@ -890,9 +829,9 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: _color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          border: Border.all(color: _color.withOpacity(0.3)),
+          color        : _color.withOpacity(0.1),
+          borderRadius : BorderRadius.circular(AppRadius.pill),
+          border       : Border.all(color: _color.withOpacity(0.3)),
         ),
         child: Text(
           status
@@ -902,15 +841,14 @@ class _StatusBadge extends StatelessWidget {
                   w.isEmpty ? '' : w[0].toUpperCase() + w.substring(1))
               .join(' '),
           style: TextStyle(
-              fontSize: 11, fontWeight: FontWeight.w600, color: _color),
+              fontSize  : 11,
+              fontWeight: FontWeight.w600,
+              color     : _color),
         ),
       );
 }
-// ─────────────────────────────────────────────────────────────────────────────
-// CREATE QUEUE SHEET
-// Bottom sheet that collects duration + window size, then seeds a new
-// queue event via POST /api/queue-events.
-// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── Create Queue Sheet ───────────────────────────────────────────────────────
 
 class _CreateQueueSheet extends StatefulWidget {
   final ShipmentApiService api;
@@ -923,19 +861,15 @@ class _CreateQueueSheet extends StatefulWidget {
 class _CreateQueueSheetState extends State<_CreateQueueSheet>
     with SingleTickerProviderStateMixin {
 
-  final _formKey = GlobalKey<FormState>();
-
-  // ── controllers ─────────────────────────────────────────────────────────
+  final _formKey      = GlobalKey<FormState>();
   final _durationCtrl = TextEditingController(text: '2');
   final _windowCtrl   = TextEditingController(text: '5');
 
-  // ── form state ──────────────────────────────────────────────────────────
-  String  _durationUnit = 'hours';   // 'minutes' | 'hours'
+  String  _durationUnit = 'hours';
   bool    _submitting   = false;
   String? _error;
   String  _selectedRule = 'highest_trips';
 
-  // ── enter animation ─────────────────────────────────────────────────────
   late AnimationController _ctrl;
   late Animation<double>   _fade;
   late Animation<Offset>   _slide;
@@ -959,7 +893,6 @@ class _CreateQueueSheetState extends State<_CreateQueueSheet>
     super.dispose();
   }
 
-  // ── computed values for the preview card ─────────────────────────────────
   double get _durationHours {
     final v = double.tryParse(_durationCtrl.text) ?? 0;
     return _durationUnit == 'hours' ? v : v / 60;
@@ -986,16 +919,15 @@ class _CreateQueueSheetState extends State<_CreateQueueSheet>
     return '$hh:$mm';
   }
 
-  // ── submit ───────────────────────────────────────────────────────────────
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_submitting) return;
     setState(() { _submitting = true; _error = null; });
     try {
       await widget.api.createQueueEvent(
-        durationHours : _durationHours,
-        windowSeconds : _windowMinutes * 60,
-        priorityRule  : _selectedRule,
+        durationHours: _durationHours,
+        windowSeconds: _windowMinutes * 60,
+        priorityRule : _selectedRule,
       );
       if (!mounted) return;
       Navigator.of(context).pop(true);
@@ -1008,12 +940,11 @@ class _CreateQueueSheetState extends State<_CreateQueueSheet>
     }
   }
 
-  // ── field decoration ─────────────────────────────────────────────────────
   InputDecoration _fieldDecoration({
-    required String label,
-    required String hint,
+    required String   label,
+    required String   hint,
     required IconData icon,
-    Widget? suffix,
+    Widget?           suffix,
   }) =>
       InputDecoration(
         labelText     : label,
@@ -1056,7 +987,7 @@ class _CreateQueueSheetState extends State<_CreateQueueSheet>
       child: SlideTransition(
         position: _slide,
         child: Container(
-          margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          margin    : const EdgeInsets.fromLTRB(12, 0, 12, 12),
           decoration: BoxDecoration(
             color        : AppColors.surface,
             borderRadius : BorderRadius.circular(AppRadius.xl),
@@ -1070,33 +1001,29 @@ class _CreateQueueSheetState extends State<_CreateQueueSheet>
           ),
           padding: EdgeInsets.fromLTRB(24, 8, 24, 24 + bottomPad),
           child: Form(
-            key: _formKey,
-            onChanged: () => setState(() {}), // rebuild preview on every keystroke
+            key      : _formKey,
+            onChanged: () => setState(() {}),
             child: Column(
-              mainAxisSize     : MainAxisSize.min,
+              mainAxisSize      : MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                // ── drag handle ─────────────────────────────────────────
                 Center(
                   child: Container(
-                    margin     : const EdgeInsets.only(bottom: 20),
-                    width      : 36,
-                    height     : 4,
-                    decoration : BoxDecoration(
+                    margin    : const EdgeInsets.only(bottom: 20),
+                    width     : 36,
+                    height    : 4,
+                    decoration: BoxDecoration(
                       color        : AppColors.border,
                       borderRadius : BorderRadius.circular(AppRadius.pill),
                     ),
                   ),
                 ),
-
-                // ── header ──────────────────────────────────────────────
                 Row(
                   children: [
                     Container(
-                      width      : 40,
-                      height     : 40,
-                      decoration : BoxDecoration(
+                      width     : 40,
+                      height    : 40,
+                      decoration: BoxDecoration(
                         color        : AppColors.primaryLight,
                         borderRadius : BorderRadius.circular(AppRadius.md),
                       ),
@@ -1119,19 +1046,17 @@ class _CreateQueueSheetState extends State<_CreateQueueSheet>
                     ),
                     const Spacer(),
                     IconButton(
-                      icon    : const Icon(Icons.close_rounded, size: 20),
-                      color   : AppColors.textSecondary,
+                      icon     : const Icon(Icons.close_rounded, size: 20),
+                      color    : AppColors.textSecondary,
                       onPressed: () => Navigator.of(context).pop(false),
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
-
-                // ── live preview card ────────────────────────────────────
                 AnimatedContainer(
-                  duration   : const Duration(milliseconds: 200),
-                  padding    : const EdgeInsets.all(14),
-                  decoration : BoxDecoration(
+                  duration  : const Duration(milliseconds: 200),
+                  padding   : const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
                     color        : AppColors.primaryLight,
                     borderRadius : BorderRadius.circular(AppRadius.lg),
                     border       : Border.all(
@@ -1155,8 +1080,6 @@ class _CreateQueueSheetState extends State<_CreateQueueSheet>
                   ),
                 ),
                 const SizedBox(height: 24),
-
-                // ── Queue Duration field ─────────────────────────────────
                 Text('Queue Duration',
                     style: AppTextStyles.labelMd
                         .copyWith(color: AppColors.textSecondary)),
@@ -1164,7 +1087,6 @@ class _CreateQueueSheetState extends State<_CreateQueueSheet>
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // numeric input
                     Expanded(
                       child: TextFormField(
                         controller  : _durationCtrl,
@@ -1179,20 +1101,19 @@ class _CreateQueueSheetState extends State<_CreateQueueSheet>
                           final n = double.tryParse(v ?? '');
                           if (n == null || n <= 0) return 'Enter a number';
                           final hrs = _durationUnit == 'hours' ? n : n / 60;
-                          if (hrs > 24) return 'Max 24 hrs';
+                          if (hrs > 24)   return 'Max 24 hrs';
                           if (hrs < 0.083) return 'Min 5 min';
                           return null;
                         },
                       ),
                     ),
                     const SizedBox(width: 10),
-                    // unit dropdown
                     SizedBox(
                       width: 110,
                       child: DropdownButtonFormField<String>(
-                        value      : _durationUnit,
-                        style      : AppTextStyles.bodyMd,
-                        decoration : _fieldDecoration(
+                        value     : _durationUnit,
+                        style     : AppTextStyles.bodyMd,
+                        decoration: _fieldDecoration(
                           label: 'Unit',
                           hint : '',
                           icon : Icons.access_time_rounded,
@@ -1208,8 +1129,6 @@ class _CreateQueueSheetState extends State<_CreateQueueSheet>
                   ],
                 ),
                 const SizedBox(height: 20),
-
-                // ── Driver Window field ──────────────────────────────────
                 Text('Driver Window',
                     style: AppTextStyles.labelMd
                         .copyWith(color: AppColors.textSecondary)),
@@ -1240,35 +1159,33 @@ class _CreateQueueSheetState extends State<_CreateQueueSheet>
                   },
                 ),
                 const SizedBox(height: 20),
-
-                // ── Priority Rule field ──────────────────────────────────
                 Text('Priority Assignment Rule',
                     style: AppTextStyles.labelMd
                         .copyWith(color: AppColors.textSecondary)),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value      : _selectedRule,
-                  style      : AppTextStyles.bodyMd,
-                  decoration : _fieldDecoration(
+                  value     : _selectedRule,
+                  style     : AppTextStyles.bodyMd,
+                  decoration: _fieldDecoration(
                     label: 'Rule',
                     hint : '',
                     icon : Icons.rule_rounded,
                   ),
                   items: const [
-                    DropdownMenuItem(value: 'highest_trips', child: Text('Highest Trips First (Default)')),
-                    DropdownMenuItem(value: 'youngest_drivers', child: Text('Younger Drivers First')),
+                    DropdownMenuItem(value: 'highest_trips',         child: Text('Highest Trips First (Default)')),
+                    DropdownMenuItem(value: 'youngest_drivers',      child: Text('Younger Drivers First')),
                     DropdownMenuItem(value: 'least_recently_active', child: Text('Least Recently Active')),
                     DropdownMenuItem(
-                      value: 'closest_to_receiver', 
-                      enabled: false, 
-                      child: Text('Closest to Receiver (Coming Soon!)', style: TextStyle(color: AppColors.textHint))
+                      value  : 'closest_to_receiver',
+                      enabled: false,
+                      child  : Text('Closest to Receiver (Coming Soon!)',
+                          style: TextStyle(color: AppColors.textHint)),
                     ),
                   ],
-                  onChanged: (v) => setState(() => _selectedRule = v ?? 'highest_trips'),
+                  onChanged: (v) =>
+                      setState(() => _selectedRule = v ?? 'highest_trips'),
                 ),
                 const SizedBox(height: 28),
-
-                // ── error banner ─────────────────────────────────────────
                 if (_error != null) ...[
                   Container(
                     padding   : const EdgeInsets.all(12),
@@ -1291,8 +1208,6 @@ class _CreateQueueSheetState extends State<_CreateQueueSheet>
                     ),
                   ),
                 ],
-
-                // ── submit ───────────────────────────────────────────────
                 SizedBox(
                   width : double.infinity,
                   height: 52,
@@ -1322,8 +1237,8 @@ class _CreateQueueSheetState extends State<_CreateQueueSheet>
                               SizedBox(width: 8),
                               Text('Go Live',
                                   style: TextStyle(
-                                      fontSize    : 15,
-                                      fontWeight  : FontWeight.w600,
+                                      fontSize     : 15,
+                                      fontWeight   : FontWeight.w600,
                                       letterSpacing: 0.2)),
                             ],
                           ),
