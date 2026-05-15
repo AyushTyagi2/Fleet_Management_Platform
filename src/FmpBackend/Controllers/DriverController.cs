@@ -15,19 +15,19 @@ public class DriverController : ControllerBase
         _driverService = driverService;
     }
 
-    [HttpPost("driver-details")]
-    public IActionResult SubmitBasicDetails([FromBody] DriverBasicDetailsDto dto)
+     [HttpPost("driver-details")]
+public IActionResult SubmitBasicDetails([FromBody] DriverBasicDetailsDto dto)
+{
+    try
     {
-        try
-        {
-            _driverService.SaveBasicDetails(dto);
-            return Ok(new { success = true });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        var result = _driverService.SaveBasicDetails(dto);
+        return Ok(result);  // now returns { driverId: "..." }
     }
+    catch (Exception ex)
+    {
+        return BadRequest(new { error = ex.Message });
+    }
+}
 
     [HttpGet("fleetowners/{id}/drivers")]
     public IActionResult GetDriversForFleetOwner([FromRoute] Guid id)
@@ -106,19 +106,7 @@ public class DriverController : ControllerBase
         }
     }
 
-    [HttpPost("driver-details")]
-public IActionResult SubmitBasicDetails([FromBody] DriverBasicDetailsDto dto)
-{
-    try
-    {
-        var result = _driverService.SaveBasicDetails(dto);
-        return Ok(result);  // now returns { driverId: "..." }
-    }
-    catch (Exception ex)
-    {
-        return BadRequest(new { error = ex.Message });
-    }
-}
+   
 
 [HttpPost("{id:guid}/approve")]
 public IActionResult ApproveDriver([FromRoute] Guid id)
