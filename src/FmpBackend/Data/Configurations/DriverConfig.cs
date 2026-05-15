@@ -21,7 +21,12 @@ public class DriverConfig : IEntityTypeConfiguration<Driver>
           .HasColumnName("license_type");
 
     entity.Property(e => e.LicenseExpiryDate)
-          .HasColumnName("license_expiry_date");
+      .HasColumnName("license_expiry_date")
+      .HasConversion(
+          v => v,
+          v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+
 
     entity.Property(e => e.AvailabilityStatus)
           .HasColumnName("availability_status");
@@ -39,7 +44,9 @@ public class DriverConfig : IEntityTypeConfiguration<Driver>
           .HasColumnName("total_trips_completed");
 
     entity.Property(e => e.CreatedAt)
-          .HasColumnName("created_at")
-          .HasDefaultValueSql("CURRENT_TIMESTAMP");
-    }
+      .HasColumnName("created_at")
+      .HasDefaultValueSql("CURRENT_TIMESTAMP")
+      .HasConversion(
+          v => v,
+          v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
 }
