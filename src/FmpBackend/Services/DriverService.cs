@@ -191,6 +191,7 @@ public class DriverService
     }
 
     // Get or create vehicle
+ // Get or create vehicle
     var vehicle = _vehicles.GetByRegistration(dto.VehicleNumber);
     if (vehicle == null)
     {
@@ -210,6 +211,10 @@ public class DriverService
         vehicle.CurrentDriverId = driver.Id;
         _vehicles.Update(vehicle);
     }
+
+    // Stamp fleet owner onto driver
+    driver.CurrentFleetOwnerId = fleetOwnerId;
+    _drivers.Update(driver);
 
     return new { driverId = driver.Id };
 }
