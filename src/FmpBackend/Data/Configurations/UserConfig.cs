@@ -23,9 +23,16 @@ public class UserConfig : IEntityTypeConfiguration<User>
 
         entity.Property(e => e.CreatedAt)
               .HasColumnName("created_at")
-              .HasDefaultValueSql("CURRENT_TIMESTAMP");
+              .HasDefaultValueSql("CURRENT_TIMESTAMP")
+              .HasConversion(
+                  v => DateTime.SpecifyKind(v, DateTimeKind.Utc),
+                  v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
 
         entity.Property(e => e.DateOfBirth)
-              .HasColumnName("date_of_birth");
+              .HasColumnName("date_of_birth")
+              .HasColumnType("date")
+              .HasConversion(
+                  v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v,
+                  v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
     }
 }
