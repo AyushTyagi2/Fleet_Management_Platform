@@ -12,6 +12,7 @@ public class FleetOwner
 
     public string? BusinessContactPhone { get; set; }
     public string? BusinessContactEmail { get; set; }
+    public string? FleetCode { get; set; }
 
     public string Status { get; set; } = "active";
     public bool Verified { get; set; }

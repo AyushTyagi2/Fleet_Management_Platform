@@ -149,19 +149,17 @@ public class DriverService
         };
     }
 
-    public void SaveBasicDetails(DriverBasicDetailsDto dto)
+    public object SaveBasicDetails(DriverBasicDetailsDto dto)
 {
-    Console.WriteLine($"DTO Phone: {dto.Phone}");
-    Console.WriteLine($"VehicleNumber: {dto.VehicleNumber}");
-    Console.WriteLine($"VehicleType: {dto.vehicleType}");
-    Console.WriteLine($"LicenseNumber: {dto.licenseNumber}");
-    // 1. User must exist
-    var user = _users.GetByEmail(dto.Phone); // ✅ FIXED
+    var user = _users.GetByEmail(dto.Phone);
+    if (user == null) throw new Exception("User not found");
 
-    if (user == null)
-        throw new Exception("User not found");
+    // Activate user immediately on onboarding submission
+    user.Status = "active";
+    user.KycStatus = "verified";
+    _users.Update(user);
 
-    // 2. Get or create driver
+    // Get or create driver record
     var driver = _drivers.GetByUserId(user.Id);
     if (driver == null)
     {
@@ -171,33 +169,66 @@ public class DriverService
             Status = "active",
             LicenseNumber = dto.licenseNumber,
             LicenseType = "HMV",
-            LicenseExpiryDate = DateTime.UtcNow.AddYears(1)
+            LicenseExpiryDate = DateTime.UtcNow.AddYears(1),
+            Verified = true,
+            AvailabilityStatus = "available"
         };
-
         driver = _drivers.Create(driver);
     }
+    else
+    {
+        driver.Verified = true;
+        driver.AvailabilityStatus = "available";
+        _drivers.Update(driver);
+    }
 
-    // 3. Get or create vehicle
+    // Resolve fleet owner — by fleet code if provided, else fallback default
+    Guid fleetOwnerId = Guid.Parse("e8ead4ad-2912-45b2-a51e-1b83c4aef242");
+    if (!string.IsNullOrWhiteSpace(dto.FleetCode))
+    {
+        var fleet = _fleets.GetByFleetCode(dto.FleetCode);
+        if (fleet != null) fleetOwnerId = fleet.Id;
+    }
+
+    // Get or create vehicle
     var vehicle = _vehicles.GetByRegistration(dto.VehicleNumber);
-
     if (vehicle == null)
     {
         vehicle = new Vehicle
         {
             RegistrationNumber = dto.VehicleNumber,
-            VehicleType = dto.vehicleType, // ✅ FIXED
+            VehicleType = dto.vehicleType,
             CurrentDriverId = driver.Id,
-            FleetOwnerId = Guid.Parse("e8ead4ad-2912-45b2-a51e-1b83c4aef242"),
+            FleetOwnerId = fleetOwnerId,
             CapacityTons = 0.0m,
             MaxLoadWeightKg = 0.0m
         };
-
         _vehicles.Create(vehicle);
     }
     else
     {
         vehicle.CurrentDriverId = driver.Id;
         _vehicles.Update(vehicle);
+    }
+
+    return new { driverId = driver.Id };
+}
+
+public void ApproveDriver(Guid driverId)
+{
+    var driver = _drivers.GetById(driverId);
+    if (driver == null) throw new Exception("Driver not found");
+
+    driver.Verified = true;
+    driver.AvailabilityStatus = "available";
+    _drivers.Update(driver);
+
+    var user = _users.GetById(driver.UserId);
+    if (user != null)
+    {
+        user.Status = "active";
+        user.KycStatus = "verified";
+        _users.Update(user);
     }
 }
 }

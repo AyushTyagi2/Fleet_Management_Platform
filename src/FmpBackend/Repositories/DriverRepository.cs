@@ -33,6 +33,13 @@ public class DriverRepository
         _db.SaveChanges();
         return driver;
     }
+
+    public void Update(Driver driver)
+    {
+        _db.Drivers.Update(driver);
+        _db.SaveChanges();
+    }
+
     public async Task<int> CountActiveAsync()
     {
         return await _db.Drivers.CountAsync(d => d.Status == "active");

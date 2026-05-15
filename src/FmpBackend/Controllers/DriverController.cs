@@ -105,4 +105,32 @@ public class DriverController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+
+    [HttpPost("driver-details")]
+public IActionResult SubmitBasicDetails([FromBody] DriverBasicDetailsDto dto)
+{
+    try
+    {
+        var result = _driverService.SaveBasicDetails(dto);
+        return Ok(result);  // now returns { driverId: "..." }
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(new { error = ex.Message });
+    }
+}
+
+[HttpPost("{id:guid}/approve")]
+public IActionResult ApproveDriver([FromRoute] Guid id)
+{
+    try
+    {
+        _driverService.ApproveDriver(id);
+        return Ok(new { success = true });
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(new { error = ex.Message });
+    }
+}
 }

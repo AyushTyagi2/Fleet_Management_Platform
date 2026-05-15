@@ -72,6 +72,7 @@ public class AppDbContext : DbContext
         entity.Property(e => e.BusinessType).HasColumnName("business_type");
         entity.Property(e => e.BusinessContactPhone).HasColumnName("business_contact_phone");
         entity.Property(e => e.BusinessContactEmail).HasColumnName("business_contact_email");
+        entity.Property(e => e.FleetCode).HasColumnName("fleet_code");
         entity.Property(e => e.Status).HasColumnName("status");
         entity.Property(e => e.Verified).HasColumnName("verified");
         entity.Property(e => e.CreatedAt)

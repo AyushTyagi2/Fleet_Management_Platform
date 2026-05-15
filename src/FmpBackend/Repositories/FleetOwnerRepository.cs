@@ -30,6 +30,12 @@ public class FleetOwnerRepository
         return _db.FleetOwners.AsEnumerable().FirstOrDefault(f => Normalize(f.BusinessContactPhone) == norm);
     }
 
+    public FleetOwner? GetByFleetCode(string fleetCode)
+    {
+        if (string.IsNullOrWhiteSpace(fleetCode)) return null;
+        return _db.FleetOwners.FirstOrDefault(f => f.FleetCode == fleetCode);
+    }
+
     public FleetOwner Create(FleetOwner owner)
     {
         _db.FleetOwners.Add(owner);

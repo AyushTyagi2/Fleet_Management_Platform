@@ -18,6 +18,8 @@ public class UserConfig : IEntityTypeConfiguration<User>
         entity.Property(e => e.PasswordHash).HasColumnName("password_hash");
         entity.Property(e => e.FullName).HasColumnName("full_name");
         entity.Property(e => e.AuthProvider).HasColumnName("auth_provider");
+        entity.Property(e => e.Status).HasColumnName("status");
+        entity.Property(e => e.KycStatus).HasColumnName("kyc_status");
 
         entity.Property(e => e.CreatedAt)
               .HasColumnName("created_at")
