@@ -50,3 +50,4 @@ public class DriverConfig : IEntityTypeConfiguration<Driver>
           v => v,
           v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
 }
+}
