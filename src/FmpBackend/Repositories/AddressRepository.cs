@@ -1,3 +1,4 @@
+using System;
 using FmpBackend.Models;
 using FmpBackend.Data;
 using Microsoft.EntityFrameworkCore;
@@ -33,5 +34,40 @@ public async Task<Address?> GetByIdAsync(Guid id)
 {
     return await _context.Addresses
         .FirstOrDefaultAsync(a => a.Id == id);
+}
+
+public async Task<Address> CreateAsync(Address address)
+{
+    if (address.Id == Guid.Empty)
+    {
+        address.Id = Guid.NewGuid();
+    }
+
+    if (address.CreatedAt == default)
+    {
+        address.CreatedAt = DateTime.UtcNow;
+    }
+
+    address.UpdatedAt = DateTime.UtcNow;
+    _context.Addresses.Add(address);
+    await _context.SaveChangesAsync();
+    return address;
+}
+
+public void Create(Address address)
+{
+    if (address.Id == Guid.Empty)
+    {
+        address.Id = Guid.NewGuid();
+    }
+
+    if (address.CreatedAt == default)
+    {
+        address.CreatedAt = DateTime.UtcNow;
+    }
+
+    address.UpdatedAt = DateTime.UtcNow;
+    _context.Addresses.Add(address);
+    _context.SaveChanges();
 }
 }
