@@ -25,7 +25,7 @@ public class SenderService
     {
         var existing = _orgs.GetByPhone(dto.Phone);
         if (existing != null)
-            throw new Exception("Organization already exists");
+            throw new InvalidOperationException("Organization already exists");
 
         var org = new Organization
         {
@@ -72,7 +72,9 @@ public class SenderService
             IsDefault = true,
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
+            ContactPhone=dto.Phone
+            
         };
         _addresses.Create(address);
     }

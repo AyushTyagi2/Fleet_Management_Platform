@@ -34,17 +34,17 @@ public class ShipmentService
     {
         var shipmentNumber = $"SHP-{DateTime.UtcNow.Ticks}";
 
-        var senderOrg = await _orgRepo.GetByEmailAsync(request.SenderPhone);
+        var senderOrg = await FindOrganizationByPhoneOrEmailAsync(request.SenderPhone);
         if (senderOrg == null)
-            throw new Exception("Sender organization not found");
+            throw new InvalidOperationException("Sender organization not found");
 
-        var receiverOrg = await _orgRepo.GetByPhoneAsync(request.ReceiverPhone);
+        var receiverOrg = await FindOrganizationByPhoneOrEmailAsync(request.ReceiverPhone);
         if (receiverOrg == null)
-            throw new Exception("Receiver organization not found");
+            throw new InvalidOperationException("Receiver organization not found");
 
-        var user = await _userRepo.GetByEmailAsync(request.SenderPhone);
+        var user = await FindUserByPhoneOrEmailAsync(request.SenderPhone);
         if (user == null)
-            throw new Exception("User not found");
+            throw new InvalidOperationException("User not found");
 
         var pickupAddress = await _addressRepo.GetDefaultByOwnerAsync(senderOrg.Id, "organization");
 
@@ -106,9 +106,9 @@ if (pickupAddress == null)
 
     public async Task<object> GetShipmentsByPhoneAsync(string phone)
     {
-        var org = await _orgRepo.GetByEmailAsync(phone);
+        var org = await FindOrganizationByPhoneOrEmailAsync(phone);
         if (org == null)
-            throw new Exception("Organization not found");
+            throw new InvalidOperationException("Organization not found");
 
         var sent     = await _ship.GetSentShipmentsAsync(org.Id);
         var received = await _ship.GetReceivedShipmentsAsync(org.Id);
@@ -130,8 +130,8 @@ if (pickupAddress == null)
         string? cargoType,
         bool? urgent)
     {
-        var org = await _orgRepo.GetByEmailAsync(phone);
-        if (org == null) throw new Exception("Organization not found");
+        var org = await FindOrganizationByPhoneOrEmailAsync(phone);
+        if (org == null) throw new InvalidOperationException("Organization not found");
 
         var sent     = await _ship.GetSentShipmentsAsync(org.Id);
         var received = await _ship.GetReceivedShipmentsAsync(org.Id);
@@ -161,9 +161,32 @@ if (pickupAddress == null)
         return new { sent = filteredSent, received = filteredReceived };
     }
 
+    private async Task<Organization?> FindOrganizationByPhoneOrEmailAsync(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        var org = await _orgRepo.GetByPhoneAsync(value);
+        if (org != null)
+            return org;
+
+        return await _orgRepo.GetByEmailAsync(value);
+    }
+
+    private async Task<User?> FindUserByPhoneOrEmailAsync(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        var user = await _userRepo.GetByPhoneAsync(value);
+        if (user != null)
+            return user;
+
+        return await _userRepo.GetByEmailAsync(value);
+    }
+
     /// <summary>
     /// Union queue search: full-text + optional status/cargoType/urgent filters across all shipments.
-    /// </summary>
     public async Task<List<object>> SearchQueueShipmentsAsync(
         string? q,
         string? status,
