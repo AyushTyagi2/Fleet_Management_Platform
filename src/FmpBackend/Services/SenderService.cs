@@ -47,17 +47,17 @@ public class SenderService
         _orgs.Create(org);
 
         // 1. Create the User record so shipment creation can find it
-        var user = new User
-        {
-            Id = Guid.NewGuid(),
-            Email = dto.Email,
-            Phone = dto.Phone,
-            FullName = dto.ContactName,
-            Status = "active",
-            KycStatus = "verified",
-            CreatedAt = DateTime.UtcNow
-        };
-        _users.Create(user);
+        // Don't create a duplicate — find the existing OTP user
+        var user = _users.GetByEmail(dto.Email);
+        if (user == null)
+            throw new InvalidOperationException("User account not found. Please log in first.");
+
+        // Update with sender role info
+        user.Phone = dto.Phone;
+        user.FullName = dto.ContactName;
+        user.Status = "active";
+        user.KycStatus = "verified";
+        _users.Update(user);
 
         // 2. Create the Address record so pickup address lookup works
         var address = new Address
