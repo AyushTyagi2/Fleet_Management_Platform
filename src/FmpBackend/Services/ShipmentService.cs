@@ -307,7 +307,15 @@ public async Task<List<object>> GetPendingShipmentsAsync()
         await _ship.UpdateAsync(shipment);
 
         // Auto-enqueue so it appears on driver queue immediately
-        await _queueService.EnqueueAsync(shipmentId, null, null);
+        // Auto-enqueue — don't let this fail the approval
+        try
+        {
+            await _queueService.EnqueueAsync(shipmentId, null, null);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Approve] Enqueue failed (non-fatal): {ex.Message}");
+        }
 
         await _log.LogAsync("shipment.approved", adminUserId, adminUserId.HasValue ? "admin" : "system",
             "shipment", shipmentId, new { shipment.ShipmentNumber, from = previousStatus, to = "approved" });

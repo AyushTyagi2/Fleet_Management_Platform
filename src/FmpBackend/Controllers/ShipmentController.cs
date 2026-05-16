@@ -88,15 +88,20 @@ public class ShipmentsController : ControllerBase
     }
 
     [HttpPost("{id}/approve")]
-    public async Task<IActionResult> ApproveShipment(Guid id)
+public async Task<IActionResult> ApproveShipment(Guid id)
+{
+    try
     {
         var result = await _service.ApproveShipmentAsync(id);
-
         if (!result)
             return NotFound("Shipment not found or invalid state");
-
         return Ok(new { message = "Shipment approved" });
     }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new { error = ex.Message });
+    }
+}
 
     [HttpPost("{id}/reject")]
     public async Task<IActionResult> RejectShipment(Guid id)
