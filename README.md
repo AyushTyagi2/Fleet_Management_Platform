@@ -207,3 +207,248 @@ flutter run
 | `SysAdminController` | `/sysadmin` | Metrics, logs, user management, force-assign |
 
 ---
+## 10. Future Architecture
+
+```mermaid
+flowchart TB
+
+%% ===========================
+%% CLIENT LAYER
+%% ===========================
+subgraph Clients["Client Applications"]
+    Sender["📦 Sender"]
+    Driver["🚚 Driver"]
+    FleetOwner["🏢 Fleet Owner"]
+    Union["⚖️ Union Admin"]
+    Admin["🛡️ System Admin"]
+end
+
+%% ===========================
+%% EDGE LAYER
+%% ===========================
+subgraph Edge["API Gateway Layer"]
+
+    Gateway["API Gateway"]
+
+    Auth["Authentication
+JWT / OAuth2 / RBAC"]
+
+    Rate["Rate Limiter"]
+
+end
+
+Sender --> Gateway
+Driver --> Gateway
+FleetOwner --> Gateway
+Union --> Gateway
+Admin --> Gateway
+
+Gateway --> Auth
+Gateway --> Rate
+
+%% ===========================
+%% DOMAIN SERVICES
+%% ===========================
+subgraph Services["Business Domain Services"]
+
+Shipment["Shipment Service"]
+
+Dispatch["Dispatch Intelligence Engine"]
+
+Fleet["Fleet Service"]
+
+Trip["Trip Service"]
+
+Notification["Notification Service"]
+
+Audit["Audit Service"]
+
+Analytics["Analytics Service"]
+
+end
+
+Auth --> Shipment
+Auth --> Dispatch
+Auth --> Fleet
+Auth --> Trip
+
+%% ===========================
+%% gRPC COMMUNICATION
+%% ===========================
+Dispatch -. gRPC .-> Fleet
+
+Dispatch -. gRPC .-> Trip
+
+Dispatch -. gRPC .-> Shipment
+
+Fleet -. gRPC .-> Trip
+
+%% ===========================
+%% DISPATCH ENGINE
+%% ===========================
+subgraph DispatchCore["Dispatch Intelligence Engine"]
+
+Queue["Queue Manager"]
+
+Eligibility["Eligibility Engine"]
+
+Preference["Preference Engine"]
+
+Priority["Priority Engine"]
+
+Matching["Matching Engine"]
+
+Conflict["Conflict Resolver"]
+
+Manual["Manual Override"]
+
+end
+
+Dispatch --> Queue
+
+Queue --> Eligibility
+
+Eligibility --> Preference
+
+Preference --> Priority
+
+Priority --> Matching
+
+Matching --> Conflict
+
+Conflict --> Manual
+
+%% ===========================
+%% EVENT BUS
+%% ===========================
+subgraph Messaging["Kafka / RabbitMQ"]
+
+EventBus["Event Streaming Platform"]
+
+end
+
+Shipment --> EventBus
+
+Matching --> EventBus
+
+Trip --> EventBus
+
+Fleet --> EventBus
+
+%% ===========================
+%% EVENT CONSUMERS
+%% ===========================
+EventBus --> Notification
+
+EventBus --> Audit
+
+EventBus --> Analytics
+
+EventBus --> Trip
+
+%% ===========================
+%% STORAGE
+%% ===========================
+subgraph Storage["Persistence Layer"]
+
+Redis["Redis"]
+
+Postgres["PostgreSQL"]
+
+Elastic["ElasticSearch"]
+
+ObjectStore["Object Storage"]
+
+end
+
+Shipment --> Redis
+Dispatch --> Redis
+Fleet --> Redis
+Trip --> Redis
+
+Shipment --> Postgres
+Dispatch --> Postgres
+Fleet --> Postgres
+Trip --> Postgres
+
+Audit --> Postgres
+
+Analytics --> Elastic
+
+Trip --> ObjectStore
+
+%% ===========================
+%% OBSERVABILITY
+%% ===========================
+subgraph Observability["Observability"]
+
+OTel["OpenTelemetry"]
+
+Prom["Prometheus"]
+
+Grafana["Grafana"]
+
+Jaeger["Jaeger"]
+
+Alert["Alert Manager"]
+
+end
+
+Shipment --> OTel
+Dispatch --> OTel
+Fleet --> OTel
+Trip --> OTel
+Notification --> OTel
+
+OTel --> Prom
+
+OTel --> Jaeger
+
+Prom --> Grafana
+
+Prom --> Alert
+
+%% ===========================
+%% BACKGROUND WORKERS
+%% ===========================
+subgraph Workers["Background Workers"]
+
+Dispatcher["Dispatch Workers"]
+
+Retry["Retry Workers"]
+
+Scheduler["Schedulers"]
+
+end
+
+Dispatcher --> Dispatch
+
+Retry --> Notification
+
+Scheduler --> Shipment
+
+%% ===========================
+%% AI LAYER
+%% ===========================
+subgraph AI["AI Intelligence Layer"]
+
+ETA["ETA Prediction"]
+
+Route["Route Optimization"]
+
+Recommendation["Driver Recommendation"]
+
+Demand["Demand Forecasting"]
+
+end
+
+Analytics --> ETA
+
+Analytics --> Route
+
+Analytics --> Recommendation
+
+Analytics --> Demand
+
+Recommendation --> Dispatch
+```
