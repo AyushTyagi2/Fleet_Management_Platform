@@ -37,17 +37,9 @@ Indian logistics dispatching is typically a race to the phone — whoever respon
 
 ## 3. Architecture
 
-```
-Sender ──┐
-Driver ──┤
-Fleet Owner ──┼──▶  Flutter App  ──[ REST + SignalR ]──▶  ASP.NET Core 8 API
-Union ───┤                                                        │
-SysAdmin ┘                                              ┌─────────┼─────────┐
-                                                        ▼         ▼         ▼
-                                                   PostgreSQL  Google     SMTP
-                                                               Auth     / Brevo
-                                     QueueMaintenanceWorker ──[ 15s ]──▶ API
-```
+<img width="1802" height="623" alt="image" src="https://github.com/user-attachments/assets/fcf3bb97-a465-4e49-af53-b19e3318a91f" />
+
+
 
 | Component | Role | Technical Implementation |
 |:---|:---|:---|
